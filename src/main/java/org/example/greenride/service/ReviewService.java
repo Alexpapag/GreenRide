@@ -9,6 +9,8 @@ import org.example.greenride.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -46,6 +48,12 @@ public class ReviewService {
         if (rating == null || rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
+        if (!"COMPLETED".equalsIgnoreCase(ride.getStatus())) {
+            throw new IllegalStateException("Can only review completed rides");
+        }
+        if (reviewer.getId().equals(reviewee.getId())) {
+            throw new IllegalStateException("User cannot review themselves");
+        }
 
         Review review = new Review();
         review.setRide(ride);
@@ -56,9 +64,44 @@ public class ReviewService {
         review.setComment(comment);
         review.setCreatedAt(LocalDateTime.now());
 
-        return reviewRepository.save(review);
-    }
+        Review saved = reviewRepository.save(review);
+        recalculateAndUpdateUserRatings(reviewee);
+        return saved;
 
+    }
+    private void recalculateAndUpdateUserRatings(User reviewee) {
+        // Fetch all reviews where this user is the reviewee
+        List<Review> allReviewsForUser = reviewRepository.findByReviewee(reviewee);
+
+        BigDecimal driverAvg = calculateAverageRatingForRole(allReviewsForUser, "DRIVER");
+        BigDecimal passengerAvg = calculateAverageRatingForRole(allReviewsForUser, "PASSENGER");
+
+        reviewee.setRatingAvgDriver(driverAvg);
+        reviewee.setRatingAvgPassenger(passengerAvg);
+
+        userRepository.save(reviewee);
+    }
+    private BigDecimal calculateAverageRatingForRole(List<Review> reviews, String role) {
+        int sum = 0;
+        int count = 0;
+
+        for (Review r : reviews) {
+            if (r.getRoleOfReviewee() != null
+                    && r.getRoleOfReviewee().equalsIgnoreCase(role)
+                    && r.getRating() != null) {
+
+                sum += r.getRating();
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return BigDecimal.valueOf(sum)
+                .divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
+    }
     // READ ALL
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
