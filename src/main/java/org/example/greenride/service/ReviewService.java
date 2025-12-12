@@ -1,16 +1,18 @@
 package org.example.greenride.service;
 
+import org.example.greenride.dto.review.ReviewRequestDTO;
 import org.example.greenride.entity.Review;
 import org.example.greenride.entity.Ride;
 import org.example.greenride.entity.User;
+import org.example.greenride.mapper.ReviewMapper;
 import org.example.greenride.repository.ReviewRepository;
 import org.example.greenride.repository.RideRepository;
 import org.example.greenride.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,128 +30,90 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
-    // CREATE
-    public Review createReview(Long rideId,
-                               Long reviewerId,
-                               Long revieweeId,
-                               String roleOfReviewee,
-                               Integer rating,
-                               String comment) {
-
-        Ride ride = rideRepository.findById(rideId)
+    public Review createReview(ReviewRequestDTO dto) {
+        Ride ride = rideRepository.findById(dto.getRideId())
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
 
-        User reviewer = userRepository.findById(reviewerId)
+        User reviewer = userRepository.findById(dto.getReviewerId())
                 .orElseThrow(() -> new IllegalArgumentException("Reviewer not found"));
 
-        User reviewee = userRepository.findById(revieweeId)
+        User reviewee = userRepository.findById(dto.getRevieweeId())
                 .orElseThrow(() -> new IllegalArgumentException("Reviewee not found"));
 
-        if (rating == null || rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
-        }
-        if (!"COMPLETED".equalsIgnoreCase(ride.getStatus())) {
-            throw new IllegalStateException("Can only review completed rides");
-        }
-        if (reviewer.getId().equals(reviewee.getId())) {
-            throw new IllegalStateException("User cannot review themselves");
-        }
-
-        Review review = new Review();
-        review.setRide(ride);
-        review.setReviewer(reviewer);
-        review.setReviewee(reviewee);
-        review.setRoleOfReviewee(roleOfReviewee);
-        review.setRating(rating);
-        review.setComment(comment);
+        Review review = ReviewMapper.fromRequestDTO(dto, ride, reviewer, reviewee);
         review.setCreatedAt(LocalDateTime.now());
 
         Review saved = reviewRepository.save(review);
-        recalculateAndUpdateUserRatings(reviewee);
+
+        // update averages on reviewee
+        recalcUserAverages(reviewee.getId());
+
         return saved;
-
-    }
-    private void recalculateAndUpdateUserRatings(User reviewee) {
-        // Fetch all reviews where this user is the reviewee
-        List<Review> allReviewsForUser = reviewRepository.findByReviewee(reviewee);
-
-        BigDecimal driverAvg = calculateAverageRatingForRole(allReviewsForUser, "DRIVER");
-        BigDecimal passengerAvg = calculateAverageRatingForRole(allReviewsForUser, "PASSENGER");
-
-        reviewee.setRatingAvgDriver(driverAvg);
-        reviewee.setRatingAvgPassenger(passengerAvg);
-
-        userRepository.save(reviewee);
-    }
-    private BigDecimal calculateAverageRatingForRole(List<Review> reviews, String role) {
-        int sum = 0;
-        int count = 0;
-
-        for (Review r : reviews) {
-            if (r.getRoleOfReviewee() != null
-                    && r.getRoleOfReviewee().equalsIgnoreCase(role)
-                    && r.getRating() != null) {
-
-                sum += r.getRating();
-                count++;
-            }
-        }
-
-        if (count == 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return BigDecimal.valueOf(sum)
-                .divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
-    }
-    // READ ALL
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
     }
 
-    // READ ONE
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found"));
     }
 
-    // READ: reviews για συγκεκριμένο χρήστη (ως reviewee)
-    public List<Review> getReviewsForUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return reviewRepository.findByReviewee(user);
+    public List<Review> getReviewsByRideId(Long rideId) {
+        return reviewRepository.findByRideId(rideId);
     }
 
-    // READ: reviews για συγκεκριμένο ride
-    public List<Review> getReviewsForRide(Long rideId) {
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
-        return reviewRepository.findByRide(ride);
+    /**
+     * Reviews όπου ο χρήστης είναι reviewer ή reviewee.
+     * Αν θες μόνο received reviews: use findByRevieweeId.
+     */
+    public List<Review> getReviewsByUserId(Long userId) {
+        return reviewRepository.findByReviewerIdOrRevieweeId(userId, userId);
     }
 
-    // UPDATE μόνο rating/comment
-    public Review updateReview(Long id, Integer rating, String comment) {
+    public Review updateReview(Long id, ReviewRequestDTO dto) {
         Review existing = getReviewById(id);
 
-        if (rating != null) {
-            if (rating < 1 || rating > 5) {
-                throw new IllegalArgumentException("Rating must be between 1 and 5");
-            }
-            existing.setRating(rating);
+        // update only rating/comment
+        existing.setRating(dto.getRating());
+        existing.setComment(dto.getComment());
+
+        Review saved = reviewRepository.save(existing);
+
+        // recalc averages for reviewee (important!)
+        if (existing.getReviewee() != null) {
+            recalcUserAverages(existing.getReviewee().getId());
         }
 
-        if (comment != null) {
-            existing.setComment(comment);
-        }
-
-        return reviewRepository.save(existing);
+        return saved;
     }
 
-    // DELETE
     public void deleteReview(Long id) {
-        if (!reviewRepository.existsById(id)) {
-            throw new IllegalArgumentException("Review not found");
-        }
+        Review existing = getReviewById(id);
+        Long revieweeId = existing.getReviewee() != null ? existing.getReviewee().getId() : null;
+
         reviewRepository.deleteById(id);
+
+        if (revieweeId != null) {
+            recalcUserAverages(revieweeId);
+        }
+    }
+
+    private void recalcUserAverages(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // driver avg
+        BigDecimal avgDriver = reviewRepository.avgRatingForUserAndRole(userId, "DRIVER");
+        // passenger avg
+        BigDecimal avgPassenger = reviewRepository.avgRatingForUserAndRole(userId, "PASSENGER");
+
+        user.setRatingAvgDriver(scale(avgDriver));
+        user.setRatingAvgPassenger(scale(avgPassenger));
+
+        userRepository.save(user);
+    }
+
+    private BigDecimal scale(BigDecimal v) {
+        if (v == null) return BigDecimal.ZERO;
+        return v.setScale(2, RoundingMode.HALF_UP);
     }
 }
+
