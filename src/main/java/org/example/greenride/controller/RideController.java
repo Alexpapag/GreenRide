@@ -1,17 +1,18 @@
 package org.example.greenride.controller;
 
+import jakarta.validation.Valid;
+import org.example.greenride.dto.ride.RideRequestDTO;
+import org.example.greenride.dto.ride.RideResponseDTO;
 import org.example.greenride.entity.Ride;
+import org.example.greenride.mapper.RideMapper;
 import org.example.greenride.service.RideService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/rides")
+@RequestMapping("/rides")
 public class RideController {
 
     private final RideService rideService;
@@ -20,72 +21,44 @@ public class RideController {
         this.rideService = rideService;
     }
 
-    // CREATE ride για συγκεκριμένο driver (driverId ως request param)
+    // CREATE
     @PostMapping
-    public ResponseEntity<Ride> createRide(@RequestParam Long driverId,
-                                           @RequestBody Ride rideRequest) {
-        Ride created = rideService.createRide(driverId, rideRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @ResponseStatus(HttpStatus.CREATED)
+    public RideResponseDTO createRide(@Valid @RequestBody RideRequestDTO dto) {
+        Ride created = rideService.createRide(dto);
+        return RideMapper.toResponseDTO(created);
     }
 
-    // READ ALL
-    @GetMapping
-    public List<Ride> getAllRides() {
-        return rideService.getAllRides();
-    }
-
-    // READ ONE
+    // READ one
     @GetMapping("/{id}")
-    public Ride getRideById(@PathVariable Long id) {
-        return rideService.getRideById(id);
+    public RideResponseDTO getRide(@PathVariable Long id) {
+        Ride ride = rideService.getRideById(id);
+        return RideMapper.toResponseDTO(ride);
     }
 
-    // UPDATE (partial update, όπως στο service)
+    // READ all
+    @GetMapping
+    public List<RideResponseDTO> getAllRides() {
+        return rideService.getAllRides()
+                .stream()
+                .map(RideMapper::toResponseDTO)
+                .toList();
+    }
+
+    // UPDATE
     @PutMapping("/{id}")
-    public Ride updateRide(@PathVariable Long id,
-                           @RequestBody Ride rideRequest) {
-        return rideService.updateRide(id, rideRequest);
+    public RideResponseDTO updateRide(@PathVariable Long id,
+                                      @RequestBody RideRequestDTO dto) {
+        Ride updated = rideService.updateRide(id, dto);
+        return RideMapper.toResponseDTO(updated);
     }
 
-    // CANCEL (λογική ακύρωση -> status = CANCELLED)
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelRide(@PathVariable Long id) {
-        rideService.cancelRide(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // DELETE (πραγματικό delete)
+    // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRide(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRide(@PathVariable Long id) {
         rideService.deleteRide(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // SEARCH: by cities
-    @GetMapping("/search/by-cities")
-    public List<Ride> searchByCities(@RequestParam String fromCity,
-                                     @RequestParam String toCity) {
-        return rideService.searchByCities(fromCity, toCity);
-    }
-
-    // SEARCH: by cities & status
-    @GetMapping("/search/by-cities-and-status")
-    public List<Ride> searchByCitiesAndStatus(@RequestParam String fromCity,
-                                              @RequestParam String toCity,
-                                              @RequestParam String status) {
-        return rideService.searchByCitiesAndStatus(fromCity, toCity, status);
-    }
-
-    // SEARCH: by start datetime range
-    @GetMapping("/search/by-start-range")
-    public List<Ride> searchByStartRange(
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime startFrom,
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime startTo) {
-
-        return rideService.searchByStartDatetimeRange(startFrom, startTo);
     }
 }
+
+
