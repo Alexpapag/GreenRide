@@ -33,6 +33,8 @@ public class SecurityConfig {
                                 "/",                        // << home page
                                 "/auth/**",
                                 "/geo/**",
+                                "/external/**",
+                                "/external/routee/**",
                                 "/h2-console/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
