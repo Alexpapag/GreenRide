@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",                        // << home page
                                 "/auth/**",
+                                "/geo/**",
                                 "/h2-console/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
