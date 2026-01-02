@@ -11,19 +11,18 @@ import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 public class RouteeAuthServiceImpl implements RouteeAuthService {
 
     private final RestTemplate restTemplate;
-
     private final String authUrl;
     private final String appId;
     private final String appSecret;
 
-    // simple in-memory cache
     private String cachedToken;
-    private Instant cachedTokenExpiresAt;
+    private Instant cachedExpiresAt;
 
     public RouteeAuthServiceImpl(
             RestTemplate restTemplate,
@@ -39,14 +38,16 @@ public class RouteeAuthServiceImpl implements RouteeAuthService {
 
     @Override
     public synchronized String getAccessToken() {
-        if (cachedToken != null && cachedTokenExpiresAt != null && Instant.now().isBefore(cachedTokenExpiresAt)) {
+        if (cachedToken != null && cachedExpiresAt != null && Instant.now().isBefore(cachedExpiresAt)) {
             return cachedToken;
         }
 
-        String basic = Base64.getEncoder().encodeToString((appId + ":" + appSecret).getBytes(StandardCharsets.UTF_8));
+        String basic = Base64.getEncoder()
+                .encodeToString((appId + ":" + appSecret).getBytes(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basic);
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
@@ -54,26 +55,20 @@ public class RouteeAuthServiceImpl implements RouteeAuthService {
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(form, headers);
 
-        ResponseEntity<RouteeTokenResponseDTO> response = restTemplate.exchange(
-                authUrl,
-                HttpMethod.POST,
-                entity,
-                RouteeTokenResponseDTO.class
+        ResponseEntity<RouteeTokenResponseDTO> res = restTemplate.exchange(
+                authUrl, HttpMethod.POST, entity, RouteeTokenResponseDTO.class
         );
 
-        RouteeTokenResponseDTO body = response.getBody();
-        if (body == null || body.getAccessToken() == null) {
+        RouteeTokenResponseDTO body = res.getBody();
+        if (body == null || body.getAccessToken() == null || body.getAccessToken().isBlank()) {
             throw new IllegalStateException("Routee token endpoint returned empty token");
         }
 
         cachedToken = body.getAccessToken();
-
-        // expires_in συνήθως 3600 (1 ώρα) :contentReference[oaicite:2]{index=2}
         long expiresIn = body.getExpiresIn() != null ? body.getExpiresIn() : 3600L;
-
-        // safety margin 60s
-        cachedTokenExpiresAt = Instant.now().plusSeconds(Math.max(60, expiresIn - 60));
+        cachedExpiresAt = Instant.now().plusSeconds(Math.max(60, expiresIn - 60));
 
         return cachedToken;
     }
 }
+

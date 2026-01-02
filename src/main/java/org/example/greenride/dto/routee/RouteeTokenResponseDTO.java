@@ -3,7 +3,6 @@ package org.example.greenride.dto.routee;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RouteeTokenResponseDTO {
-
     @JsonProperty("access_token")
     private String accessToken;
 
@@ -12,8 +11,6 @@ public class RouteeTokenResponseDTO {
 
     @JsonProperty("expires_in")
     private Long expiresIn;
-
-    public RouteeTokenResponseDTO() {}
 
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
