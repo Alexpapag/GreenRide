@@ -4,10 +4,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
+import java.util.*;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
@@ -35,21 +38,29 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return parseAllClaims(token).getSubject();
+        return extractClaim(token, Claims::getSubject);
     }
 
     public String extractRole(String token) {
-        Object role = parseAllClaims(token).get("role");
-        return role == null ? null : role.toString();
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public boolean isTokenValid(String token) {
         try {
-            Claims c = parseAllClaims(token);
-            return c.getExpiration() != null && c.getExpiration().after(new Date());
+            Claims claims = parseAllClaims(token);
+            Date expiration = claims.getExpiration();
+            return expiration != null && expiration.after(new Date());
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
+        String role = extractRole(token);
+        if (role == null || role.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     private Claims parseAllClaims(String token) {
@@ -58,5 +69,10 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = parseAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 }

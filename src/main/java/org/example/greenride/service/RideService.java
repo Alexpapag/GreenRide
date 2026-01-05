@@ -278,5 +278,18 @@ public class RideService {
     public List<Ride> searchByStartDatetimeRange(LocalDateTime startFrom, LocalDateTime startTo) {
         return rideRepository.findByStartDatetimeBetween(startFrom, startTo);
     }
+
+    // Driver's rides (add after getAllRides())
+    public List<Ride> getRidesByDriver(Long driverId) {
+        User driver = userRepository.findById(driverId)
+                .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+        return rideRepository.findByDriver(driver);
+    }
+
+    // Available rides (exclude driver's own)
+    public List<Ride> getAvailableRides(Long excludeDriverId) {
+        return rideRepository.findByDriverIdNotAndStatus(excludeDriverId, "PLANNED");
+    }
+
 }
 

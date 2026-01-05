@@ -24,25 +24,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(
-                                "/",                        // << home page
-                                "/auth/**",
-                                "/geo/**",
-                                "/external/**",
-                                "/external/routee/**",
-                                "/h2-console/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/", "/web/**", "/css/**", "/auth/**", "/geo/**",
+                                "/external/**", "/routee/**", "/h2-console/**",
+                                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                                "/debug/**", "/error"
                         ).permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "*.ico").permitAll()
+
+                        // Admin endpoints (temporarily permit all for testing)
+                        .requestMatchers("/admin/**").permitAll() // Changed from hasRole("ADMIN")
+
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

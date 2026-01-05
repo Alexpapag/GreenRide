@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Ride - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Dashboard Layout for consistency */
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .dashboard-sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        padding: 2rem 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-header {
+        padding: 0 1.5rem 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #10b981, #3b82f6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-nav {
+        padding: 0 1rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.875rem 1rem;
+        margin: 4px 0;
+        color: #cbd5e1;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-item.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border-left: 4px solid #10b981;
+    }
+
+    .nav-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .logout-btn {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-form button {
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        padding: 0.875rem 1rem;
+        cursor: pointer;
+        text-align: left;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .logout-form button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .dashboard-main {
+        flex: 1;
+        margin-left: 250px;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1rem;
+        }
+
+        .dashboard-main {
+            margin-left: 0;
+            padding: 1rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <a th:href="@{/web/dashboard}" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a th:href="@{/web/rides}" class="nav-item">
+        <i class="fas fa-search"></i>
+        <span>Find Rides</span>
+      </a>
+      <a th:href="@{/web/rides/new}" class="nav-item active">
+        <i class="fas fa-plus-circle"></i>
+        <span>Offer Ride</span>
+      </a>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+          <button type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="form-container">
+      <div class="form-card">
+        <h1>Offer a Ride</h1>
+        <p>Share your journey with others and earn money for your commute</p>
+
+        <form th:action="@{/web/rides}" th:object="${rideRequest}" method="post" id="rideForm">
+
+          <!-- Route Information -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fromCity">
+                <i class="fas fa-map-marker-alt"></i>
+                From City
+              </label>
+              <input type="text"
+                     id="fromCity"
+                     th:field="*{fromCity}"
+                     placeholder="Departure city"
+                     required>
+              <span th:if="${#fields.hasErrors('fromCity')}"
+                    th:errors="*{fromCity}"
+                    class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="toCity">
+                <i class="fas fa-map-marker-alt"></i>
+                To City
+              </label>
+              <input type="text"
+                     id="toCity"
+                     th:field="*{toCity}"
+                     placeholder="Destination city"
+                     required>
+              <span th:if="${#fields.hasErrors('toCity')}"
+                    th:errors="*{toCity}"
+                    class="error-message"></span>
+            </div>
+          </div>
+
+          <!-- Date and Time -->
+          <div class="form-group">
+            <label for="startDatetime">
+              <i class="far fa-calendar-alt"></i>
+              Departure Date & Time
+            </label>
+            <input type="datetime-local"
+                   id="startDatetime"
+                   th:field="*{startDatetime}"
+                   required>
+            <div class="form-help">Select the date and time of departure</div>
+          </div>
+
+          <!-- Seats and Price -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="availableSeatsTotal">
+                <i class="fas fa-users"></i>
+                Total Seats Available
+              </label>
+              <input type="number"
+                     id="availableSeatsTotal"
+                     th:field="*{availableSeatsTotal}"
+                     min="1"
+                     max="8"
+                     placeholder="e.g., 4"
+                     required>
+              <div class="form-help">How many passengers can you take?</div>
+            </div>
+
+            <div class="form-group">
+              <label for="pricePerSeat">
+                <i class="fas fa-euro-sign"></i>
+                Price per Seat (€)
+              </label>
+              <input type="number"
+                     id="pricePerSeat"
+                     th:field="*{pricePerSeat}"
+                     step="0.5"
+                     min="1"
+                     placeholder="e.g., 15.00"
+                     required>
+              <div class="form-help">Suggested: €0.10 per km</div>
+            </div>
+          </div>
+
+          <!-- Distance (Optional) -->
+          <div class="form-group">
+            <label for="distanceKm">
+              <i class="fas fa-road"></i>
+              Distance (km) - Optional
+            </label>
+            <input type="number"
+                   id="distanceKm"
+                   th:field="*{distanceKm}"
+                   step="1"
+                   min="1"
+                   placeholder="e.g., 280">
+            <div class="form-help">Approximate distance in kilometers</div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="form-group">
+            <label for="description">
+              <i class="fas fa-comment-alt"></i>
+              Additional Information
+            </label>
+            <textarea id="description"
+                      th:field="*{description}"
+                      rows="3"
+                      placeholder="Any additional details about the ride (meeting point, luggage space, preferences, etc.)"></textarea>
+          </div>
+
+          <!-- Car Information -->
+          <div class="form-group">
+            <label for="carModel">
+              <i class="fas fa-car"></i>
+              Car Model - Optional
+            </label>
+            <input type="text"
+                   id="carModel"
+                   th:field="*{carModel}"
+                   placeholder="e.g., Toyota Prius 2020">
+          </div>
+
+          <!-- Terms and Conditions -->
+          <div class="form-group" style="margin-top: 2rem;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="terms" required style="width: auto; margin-top: 3px;">
+              <div>
+                I agree to the <a href="#" style="color: #10b981;">GreenRide Terms of Service</a>
+                <div class="form-help">
+                  By offering a ride, you confirm that you have a valid driver's license,
+                  vehicle insurance, and agree to follow all traffic regulations.
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-car"></i>
+              Create Ride
+            </button>
+            <a th:href="@{/web/dashboard}" class="cancel-btn">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('rideForm');
+      const submitBtn = form.querySelector('.submit-btn');
+
+      // Form validation and price suggestion
+      const fromCityInput = document.getElementById('fromCity');
+      const toCityInput = document.getElementById('toCity');
+      const distanceInput = document.getElementById('distanceKm');
+      const priceInput = document.getElementById('pricePerSeat');
+
+      // Suggest price based on distance (0.10€ per km)
+      if (distanceInput && priceInput) {
+          distanceInput.addEventListener('input', function() {
+              if (this.value && !priceInput.value) {
+                  const suggestedPrice = (this.value * 0.1).toFixed(2);
+                  priceInput.placeholder = `Suggested: €${suggestedPrice}`;
+              }
+          });
+      }
+
+      // Auto-calculate distance if from/to are entered
+      // In a real app, this would call a geolocation API
+      function calculateDistance() {
+          if (fromCityInput.value && toCityInput.value && !distanceInput.value) {
+              // Mock distance calculation
+              const mockDistances = {
+                  'Berlin-Hamburg': 280,
+                  'Athens-Thessaloniki': 500,
+                  'Paris-Lyon': 465,
+                  'London-Manchester': 320
+              };
+
+              const route = `${fromCityInput.value}-${toCityInput.value}`;
+              if (mockDistances[route]) {
+                  distanceInput.value = mockDistances[route];
+                  const suggestedPrice = (mockDistances[route] * 0.1).toFixed(2);
+                  priceInput.placeholder = `Suggested: €${suggestedPrice}`;
+              }
+          }
+      }
+
+      if (fromCityInput && toCityInput) {
+          fromCityInput.addEventListener('blur', calculateDistance);
+          toCityInput.addEventListener('blur', calculateDistance);
+      }
+
+      // Form submission
+      form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          // Validate terms
+          const termsCheckbox = document.getElementById('terms');
+          if (!termsCheckbox.checked) {
+              alert('Please agree to the Terms of Service');
+              termsCheckbox.focus();
+              return;
+          }
+
+          // Show loading state
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Ride...';
+          submitBtn.disabled = true;
+
+          // Submit form after delay
+          setTimeout(() => {
+              form.submit();
+          }, 1500);
+      });
+
+      // Set minimum datetime to now
+      const datetimeInput = document.getElementById('startDatetime');
+      if (datetimeInput) {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+
+          datetimeInput.min = `${year}-${month}-${day}T${hours}:${minutes}`;
+      }
+
+      // Add focus effects
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+          input.addEventListener('focus', function() {
+              this.style.borderColor = '#10b981';
+              this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+          });
+
+          input.addEventListener('blur', function() {
+              this.style.borderColor = '#e2e8f0';
+              this.style.boxShadow = 'none';
+          });
+      });
+  });
+</script>
+</body>
+</html>

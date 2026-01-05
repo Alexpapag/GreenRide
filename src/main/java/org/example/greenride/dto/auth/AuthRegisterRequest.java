@@ -14,9 +14,21 @@ public class AuthRegisterRequest {
     @Email(message = "Email must be valid")
     private String email;
 
+    @NotBlank
+    @Size(max = 100)
+    private String fullName;
+
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
     private String password;
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
     // π.χ. DRIVER / PASSENGER role
     @NotBlank(message = "Role is required")

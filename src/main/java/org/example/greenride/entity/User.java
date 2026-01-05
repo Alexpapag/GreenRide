@@ -204,4 +204,52 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public List<Ride> getRidesAsDriver() {
+        return ridesAsDriver;
+    }
+
+    public void setRidesAsDriver(List<Ride> ridesAsDriver) {
+        this.ridesAsDriver = ridesAsDriver;
+    }
+
+    public List<Booking> getBookingsAsPassenger() {
+        return bookingsAsPassenger;
+    }
+
+    public void setBookingsAsPassenger(List<Booking> bookingsAsPassenger) {
+        this.bookingsAsPassenger = bookingsAsPassenger;
+    }
+
+    public List<Review> getReviewsWritten() {
+        return reviewsWritten;
+    }
+
+    public void setReviewsWritten(List<Review> reviewsWritten) {
+        this.reviewsWritten = reviewsWritten;
+    }
+
+    public List<Review> getReviewsReceived() {
+        return reviewsReceived;
+    }
+
+    public void setReviewsReceived(List<Review> reviewsReceived) {
+        this.reviewsReceived = reviewsReceived;
+    }
+
+    public List<UserReport> getReportsReceived() {
+        return reportsReceived;
+    }
+
+    public void setReportsReceived(List<UserReport> reportsReceived) {
+        this.reportsReceived = reportsReceived;
+    }
+
+    public List<UserReport> getReportsMade() {
+        return reportsMade;
+    }
+
+    public void setReportsMade(List<UserReport> reportsMade) {
+        this.reportsMade = reportsMade;
+    }
 }

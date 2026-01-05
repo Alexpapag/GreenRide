@@ -5,11 +5,15 @@ import org.example.greenride.entity.User;
 import org.example.greenride.repository.UserRepository;
 import org.example.greenride.security.JwtService;
 import org.springframework.security.authentication.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -40,9 +44,10 @@ public class AuthService {
         User u = new User();
         u.setUsername(dto.getUsername());
         u.setPassword(passwordEncoder.encode(dto.getPassword()));
-        u.setFullName(dto.getFullName());
+        u.setFullName(dto.getFullName() != null ? dto.getFullName() : dto.getUsername());
         u.setEmail(dto.getEmail());
         u.setPhone(dto.getPhone());
+        u.setRole(dto.getRole());
 
         // defaults
         u.setStatus("ACTIVE");
@@ -60,12 +65,38 @@ public class AuthService {
     }
 
     public AuthResponseDTO login(UserLoginDTO dto) {
+        System.out.println("Login attempt for user: " + dto.getUsername());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword())
         );
 
         User u = userRepository.findByUsername(dto.getUsername());
-        String token = jwtService.generateToken(u.getUsername(), u.getRole());
-        return new AuthResponseDTO(token, u.getId(), u.getUsername(), u.getRole());
+
+        // Get the highest role (ADMIN > USER)
+        String highestRole = getHighestRole(u);
+
+        String token = jwtService.generateToken(u.getUsername(), highestRole);
+        return new AuthResponseDTO(token, u.getId(), u.getUsername(), highestRole);
+    }
+
+    // Helper method to determine the highest role
+    private String getHighestRole(User user) {
+        // First check if user has ADMIN in their roles collection
+        boolean isAdminInRoles = user.getRoles().stream()
+                .anyMatch(role -> "ROLE_ADMIN".equalsIgnoreCase(role.getName()));
+
+        if (isAdminInRoles) {
+            return "ADMIN";
+        }
+
+        // Fall back to the role field
+        return user.getRole() != null ? user.getRole() : "USER";
+    }
+
+    // Helper method to get authorities
+    private Collection<? extends GrantedAuthority> getAuthorities(User user) {
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 }

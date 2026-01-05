@@ -9,4 +9,9 @@ import java.util.List;
 public interface UserReportRepository extends JpaRepository<UserReport, Long> {
 
     List<UserReport> findByReportedUser(User reportedUser);
+
+    // New methods for AdminService
+    long countByStatus(String status);
+
+    List<UserReport> findByStatus(String status);
 }

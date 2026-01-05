@@ -2,11 +2,15 @@ package org.example.greenride.security;
 
 import org.example.greenride.entity.User;
 import org.example.greenride.repository.UserRepository;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -19,17 +23,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User u = userRepository.findByUsername(username);
-        if (u == null) throw new UsernameNotFoundException("User not found");
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
 
-        String role = u.getRole() == null ? "USER" : u.getRole();
-        // Spring expects roles like "ROLE_DRIVER" if you use hasRole("DRIVER")
-        String authority = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .authorities(getAuthorities(user))
+                .build();
+    }
 
-        return new org.springframework.security.core.userdetails.User(
-                u.getUsername(),
-                u.getPassword(),
-                List.of(new SimpleGrantedAuthority(authority))
-        );
+    private Collection<? extends GrantedAuthority> getAuthorities(User user) {
+        // Convert roles to authorities
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 }

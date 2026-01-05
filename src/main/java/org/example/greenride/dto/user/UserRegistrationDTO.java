@@ -26,6 +26,17 @@ public class UserRegistrationDTO {
     @Size(max = 30)
     private String phone;
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    @NotBlank(message = "Role is required")
+    private String role;  // Should be "DRIVER" or "user"
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 

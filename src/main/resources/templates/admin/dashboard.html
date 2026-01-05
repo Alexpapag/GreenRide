@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Admin-specific styles */
+    .admin-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .admin-header {
+        margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+        font-size: 2rem;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-header p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        color: white;
+    }
+
+    .stat-icon.users {
+        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    }
+
+    .stat-icon.rides {
+        background: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .stat-icon.bookings {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    }
+
+    .stat-icon.revenue {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    }
+
+    .stat-icon.reports {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0.5rem 0;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Quick Stats */
+    .quick-stats {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .quick-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .quick-stat-item {
+        padding: 1rem;
+    }
+
+    .quick-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 0.25rem;
+    }
+
+    .quick-stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    /* Section Cards */
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .view-all {
+        color: #3b82f6;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .view-all:hover {
+        text-decoration: underline;
+    }
+
+    /* Tables */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.9rem;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .data-table tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-banned {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-suspended {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-open {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .status-closed {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        border: 1px solid rgba(107, 114, 128, 0.3);
+    }
+
+    /* Action buttons */
+    .action-btn {
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid;
+        background: white;
+        transition: all 0.2s ease;
+        margin-right: 0.5rem;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-edit {
+        color: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    .btn-edit:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-ban {
+        color: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .btn-ban:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .btn-unban {
+        color: #10b981;
+        border-color: #10b981;
+    }
+
+    .btn-unban:hover {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Admin navigation */
+    .admin-nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #475569;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-btn:hover {
+        border-color: #10b981;
+        color: #10b981;
+        transform: translateY(-1px);
+    }
+
+    .nav-btn.active {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar (same as before) -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+
+    <div class="user-profile">
+      <div class="user-greeting">Admin Panel</div>
+      <div class="user-name" th:text="${username}">Admin</div>
+      <div class="user-role">
+        <span class="role-badge driver">ADMIN</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a th:href="@{/web/dashboard}" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>User Dashboard</span>
+      </a>
+      <a th:href="@{/admin/dashboard}" class="nav-item active">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Admin Dashboard</span>
+      </a>
+      <a th:href="@{/admin/users}" class="nav-item">
+        <i class="fas fa-users"></i>
+        <span>User Management</span>
+      </a>
+      <a th:href="@{/admin/rides}" class="nav-item">
+        <i class="fas fa-car"></i>
+        <span>Ride Management</span>
+      </a>
+      <a th:href="@{/admin/reports}" class="nav-item">
+        <i class="fas fa-flag"></i>
+        <span>Reports</span>
+      </a>
+      <div th:if="${session.role == 'ADMIN'}">
+        <a th:href="@{/admin/dashboard}" class="nav-item" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Admin Panel</span>
+        </a>
+      </div>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+          <button type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="admin-container">
+      <!-- Header -->
+      <header class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <p>Welcome back, <span th:text="${username}">Admin</span>. Here's what's happening with your platform.</p>
+      </header>
+
+      <!-- Stats Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon users">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-value" th:text="${totalUsers}">0</div>
+          <p class="stat-label">Total Users</p>
+          <div class="quick-stats-grid" style="margin-top: 1rem;">
+            <div>
+              <div class="quick-stat-value" th:text="${activeUsers}">0</div>
+              <div class="quick-stat-label">Active</div>
+            </div>
+            <div>
+              <div class="quick-stat-value" th:text="${bannedUsers}">0</div>
+              <div class="quick-stat-label">Banned</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon rides">
+            <i class="fas fa-car"></i>
+          </div>
+          <div class="stat-value" th:text="${totalRides}">0</div>
+          <p class="stat-label">Total Rides</p>
+          <div class="quick-stats-grid" style="margin-top: 1rem;">
+            <div>
+              <div class="quick-stat-value" th:text="${activeRides}">0</div>
+              <div class="quick-stat-label">Active</div>
+            </div>
+            <div>
+              <div class="quick-stat-value" th:text="${completedRides}">0</div>
+              <div class="quick-stat-label">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon bookings">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <div class="stat-value" th:text="${totalBookings}">0</div>
+          <p class="stat-label">Total Bookings</p>
+          <div class="quick-stats-grid" style="margin-top: 1rem;">
+            <div>
+              <div class="quick-stat-value" th:text="${confirmedBookings}">0</div>
+              <div class="quick-stat-label">Confirmed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon revenue">
+            <i class="fas fa-euro-sign"></i>
+          </div>
+          <div class="stat-value">€<span th:text="${totalRevenue}">0</span></div>
+          <p class="stat-label">Total Revenue</p>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon reports">
+            <i class="fas fa-flag"></i>
+          </div>
+          <div class="stat-value" th:text="${totalReports}">0</div>
+          <p class="stat-label">Reports</p>
+          <div class="quick-stats-grid" style="margin-top: 1rem;">
+            <div>
+              <div class="quick-stat-value" th:text="${openReports}">0</div>
+              <div class="quick-stat-label">Open</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Activity -->
+      <div class="quick-stats">
+        <h3 style="margin-top: 0; margin-bottom: 1rem; color: #1e293b;">Today's Activity</h3>
+        <div class="quick-stats-grid">
+          <div class="quick-stat-item">
+            <div class="quick-stat-value" th:text="${todayUsers}">0</div>
+            <div class="quick-stat-label">New Users</div>
+          </div>
+          <div class="quick-stat-item">
+            <div class="quick-stat-value" th:text="${todayRides}">0</div>
+            <div class="quick-stat-label">New Rides</div>
+          </div>
+          <div class="quick-stat-item">
+            <div class="quick-stat-value" th:text="${todayBookings}">0</div>
+            <div class="quick-stat-label">New Bookings</div>
+          </div>
+          <div class="quick-stat-item">
+            <div class="quick-stat-value" th:text="${todayBookings * 15}">0</div>
+            <div class="quick-stat-label">€ Revenue</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Users -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Recent Users</h2>
+          <a th:href="@{/admin/users}" class="view-all">View All →</a>
+        </div>
+        <div th:if="${recentUsers != null and !recentUsers.isEmpty()}">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${recentUsers}">
+              <td th:text="${user.username}">johndoe</td>
+              <td th:text="${user.fullName}">John Doe</td>
+              <td th:text="${user.email}">john@example.com</td>
+              <td>
+                                        <span class="status-badge" th:classappend="${user.role == 'ADMIN'} ? 'status-active' : 'status-suspended'">
+                                            <span th:text="${user.role}">USER</span>
+                                        </span>
+              </td>
+              <td>
+                                      <span th:if="${user.status == 'ACTIVE'}" class="status-badge status-active">
+    <span th:text="${user.status}">ACTIVE</span>
+</span>
+                <span th:if="${user.status == 'BANNED'}" class="status-badge status-banned">
+    <span th:text="${user.status}">BANNED</span>
+</span>
+                <span th:if="${user.status == 'SUSPENDED'}" class="status-badge status-suspended">
+    <span th:text="${user.status}">SUSPENDED</span>
+</span>
+              </td>
+              <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div th:if="${recentUsers == null or recentUsers.isEmpty()}" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3>No recent users</h3>
+          <p>No users have registered recently.</p>
+        </div>
+      </div>
+
+      <!-- Recent Rides -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Recent Rides</h2>
+          <a th:href="@{/admin/rides}" class="view-all">View All →</a>
+        </div>
+        <div th:if="${recentRides != null and !recentRides.isEmpty()}">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Route</th>
+              <th>Driver</th>
+              <th>Date</th>
+              <th>Seats</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="ride : ${recentRides}">
+              <td>
+                <strong th:text="${ride.fromCity} + ' → ' + ${ride.toCity}">Berlin → Hamburg</strong>
+              </td>
+              <td th:text="${ride.driver.fullName}">John Driver</td>
+              <td th:text="${#temporals.format(ride.startDatetime, 'dd/MM HH:mm')}">01/01 08:00</td>
+              <td th:text="${ride.availableSeatsRemain} + '/' + ${ride.availableSeatsTotal}">3/4</td>
+              <td>€<span th:text="${ride.pricePerSeat}">15.00</span></td>
+              <td>
+                                        <span class="status-badge" th:classappend="${ride.status == 'PLANNED'} ? 'status-active' :
+                                                                                  ${ride.status == 'COMPLETED'} ? 'status-closed' : 'status-suspended'}">
+                                            <span th:text="${ride.status}">PLANNED</span>
+                                        </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div th:if="${recentRides == null or recentRides.isEmpty()}" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-car"></i>
+          </div>
+          <h3>No recent rides</h3>
+          <p>No rides have been created recently.</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Quick Actions</h2>
+        </div>
+        <div class="admin-nav">
+          <a th:href="@{/admin/users}" class="nav-btn">
+            <i class="fas fa-user-cog"></i>
+            Manage Users
+          </a>
+          <a th:href="@{/admin/rides}" class="nav-btn">
+            <i class="fas fa-car"></i>
+            Manage Rides
+          </a>
+          <a th:href="@{/admin/reports}" class="nav-btn">
+            <i class="fas fa-flag"></i>
+            View Reports
+          </a>
+          <a th:href="@{/web/rides/new}" class="nav-btn">
+            <i class="fas fa-plus-circle"></i>
+            Create Ride
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Auto-refresh dashboard every 60 seconds
+  setTimeout(function() {
+      window.location.reload();
+  }, 60000);
+
+  // Initialize tooltips
+  document.querySelectorAll('.stat-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-2px)';
+      });
+      card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+      });
+  });
+</script>
+</body>
+</html>

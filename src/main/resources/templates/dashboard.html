@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+
+    <!-- User Profile -->
+    <div class="user-profile">
+      <div class="user-greeting">Welcome back,</div>
+      <div class="user-name" th:text="${session.username}">John Doe</div>
+      <div class="user-role">
+        <span class="role-badge driver">Driver</span>
+        <span class="role-badge passenger">Passenger</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a th:href="@{/web/rides}" class="nav-item">
+        <i class="fas fa-search"></i>
+        <span>Find Rides</span>
+      </a>
+      <a th:href="@{/web/rides/new}" class="nav-item">
+        <i class="fas fa-plus-circle"></i>
+        <span>Offer Ride</span>
+      </a>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+            <button type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h1>GreenRide Dashboard</h1>
+      <p th:text="'Welcome to your carpooling dashboard, ' + ${session.username} + '!'">
+        Welcome to your carpooling dashboard!
+      </p>
+    </header>
+
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+      <h2>Ready for your next carpooling adventure?</h2>
+      <p>
+        You can both offer rides as a driver and book rides as a passenger.
+        Choose how you want to travel today!
+      </p>
+      <div class="welcome-actions">
+        <a th:href="@{/web/rides}" class="welcome-btn">
+          <i class="fas fa-search"></i>
+          Find Rides
+        </a>
+        <a th:href="@{/web/rides/new}" class="welcome-btn primary">
+          <i class="fas fa-plus-circle"></i>
+          Offer Ride
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon driver">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="stat-value" th:text="${myRides != null ? myRides.size() : 0}">0</div>
+        <p class="stat-label">My Rides</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon passenger">
+          <i class="fas fa-user-friends"></i>
+        </div>
+        <div class="stat-value" th:text="${myBookings != null ? myBookings.size() : 0}">0</div>
+        <p class="stat-label">My Bookings</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon rating">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-value">0.0</div>
+        <p class="stat-label">Rating</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon total">
+          <i class="fas fa-road"></i>
+        </div>
+        <div class="stat-value" th:text="${(myRides != null ? myRides.size() : 0) + (myBookings != null ? myBookings.size() : 0)}">0</div>
+        <p class="stat-label">Total Trips</p>
+      </div>
+    </div>
+
+    <!-- My Rides Section -->
+    <div th:if="${myRides != null and !myRides.isEmpty()}" class="my-rides-section">
+      <div class="section-header">
+        <h2>My Offered Rides</h2>
+        <a th:href="@{/web/rides}" class="view-all">View All →</a>
+      </div>
+      <div th:each="ride : ${myRides}" class="ride-item">
+        <div class="ride-info">
+          <h3 th:text="${ride.fromCity} + ' → ' + ${ride.toCity}">Berlin → Hamburg</h3>
+          <p th:text="${ride.startDatetime}">Tomorrow, 08:00 AM</p>
+          <div class="ride-details">
+            <span th:text="${ride.availableSeatsRemain} + ' seats left'">3 seats left</span>
+            <span th:text="'€' + ${ride.pricePerSeat} + '/seat'">€15/seat</span>
+            <span th:text="${ride.distanceKm} + ' km'">280 km</span>
+          </div>
+        </div>
+        <div class="ride-actions">
+          <button class="btn-small" onclick="alert('Ride details feature coming soon')">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Bookings Section -->
+    <div th:if="${myBookings != null and !myBookings.isEmpty()}" class="my-rides-section">
+      <div class="section-header">
+        <h2>My Booked Rides</h2>
+      </div>
+      <div th:each="booking : ${myBookings}" class="ride-item">
+        <div class="ride-info">
+          <h3 th:text="${booking.ride.fromCity} + ' → ' + ${booking.ride.toCity}">Berlin → Hamburg</h3>
+          <p th:text="${booking.ride.startDatetime}">Tomorrow, 08:00 AM</p>
+          <div class="ride-details">
+            <span th:text="'Driver: ' + ${booking.ride.driver.fullName}">Driver: John Smith</span>
+            <span th:text="'€' + ${booking.totalPrice}">€45.00</span>
+            <span th:text="${booking.bookingStatus}">Confirmed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty States -->
+    <div th:if="${(myRides == null or myRides.isEmpty()) and (myBookings == null or myBookings.isEmpty())}"
+         class="my-rides-section">
+      <div class="section-header">
+        <h2>My Activities</h2>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-car"></i>
+          <i class="fas fa-user-friends" style="margin-left: -20px;"></i>
+        </div>
+        <h3>No activities yet</h3>
+        <p>
+          You haven't offered or booked any rides yet. Start your carpooling journey today!
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <a th:href="@{/web/rides}" class="welcome-btn" style="display: inline-flex;">
+            <i class="fas fa-search"></i>
+            Find Rides
+          </a>
+          <a th:href="@{/web/rides/new}" class="welcome-btn primary" style="display: inline-flex;">
+            <i class="fas fa-plus-circle"></i>
+            Offer Ride
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="my-rides-section">
+      <div class="section-header">
+        <h2>Quick Actions</h2>
+      </div>
+      <div class="quick-actions-grid">
+        <a th:href="@{/web/rides}" class="action-card">
+          <i class="fas fa-search"></i>
+          <h4>Find Rides</h4>
+          <p>Browse available carpooling options as a passenger</p>
+        </a>
+
+        <a th:href="@{/web/rides/new}" class="action-card">
+          <i class="fas fa-plus-circle"></i>
+          <h4>Offer Ride</h4>
+          <p>Share your journey with others as a driver</p>
+        </a>
+
+        <a th:href="@{/web/dashboard}" class="action-card">
+          <i class="fas fa-history"></i>
+          <h4>My History</h4>
+          <p>View your ride and booking history</p>
+        </a>
+
+        <div class="action-card" onclick="alert('Profile feature coming soon')">
+          <i class="fas fa-user-cog"></i>
+          <h4>Profile</h4>
+          <p>Update your personal information</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- GreenRide Benefits -->
+    <div class="my-rides-section">
+      <div class="section-header">
+        <h2>Why Choose GreenRide?</h2>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <i class="fas fa-leaf"></i>
+          <h4>Eco-Friendly</h4>
+          <p>Reduce carbon footprint by sharing rides</p>
+        </div>
+        <div class="benefit-card">
+          <i class="fas fa-money-bill-wave"></i>
+          <h4>Save Money</h4>
+          <p>Split costs on fuel, tolls, and parking</p>
+        </div>
+        <div class="benefit-card">
+          <i class="fas fa-users"></i>
+          <h4>Community</h4>
+          <p>Connect with fellow commuters</p>
+        </div>
+        <div class="benefit-card">
+          <i class="fas fa-shield-alt"></i>
+          <h4>Safe & Verified</h4>
+          <p>All users are registered and verified</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add these styles for dashboard components -->
+<style>
+  /* Role Badges */
+  .role-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
+  }
+
+  .role-badge.driver {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .role-badge.passenger {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  /* Ride Items */
+  .ride-item {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+  }
+
+  .ride-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .ride-info h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: #1e293b;
+  }
+
+  .ride-info p {
+      margin: 0 0 0.5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+  }
+
+  .ride-details {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+      color: #475569;
+  }
+
+  .ride-details span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+  }
+
+  .btn-small {
+      padding: 0.5rem 1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+  }
+
+  .btn-small:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+  }
+
+  /* Quick Actions Grid */
+  .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+  }
+
+  .action-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+  }
+
+  .action-card:hover {
+      border-color: #10b981;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  }
+
+  .action-card i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #10b981;
+  }
+
+  .action-card h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: #1e293b;
+  }
+
+  .action-card p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.9rem;
+  }
+
+  /* Benefits Grid */
+  .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+  }
+
+  .benefit-card {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+  }
+
+  .benefit-card i {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  .benefit-card h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: #1e293b;
+  }
+
+  .benefit-card p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.9rem;
+  }
+
+  /* Empty State with dual icons */
+  .empty-icon {
+      position: relative;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+  }
+
+  .empty-icon i:first-child {
+      color: #10b981;
+  }
+
+  .empty-icon i:last-child {
+      color: #3b82f6;
+      margin-left: -20px;
+  }
+
+  /* Additional stat icon */
+  .stat-icon.total {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: white;
+  }
+</style>
+</body>
+</html>

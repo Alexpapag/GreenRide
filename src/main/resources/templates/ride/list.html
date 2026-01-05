@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Rides - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Dashboard Layout for consistency */
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .dashboard-sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        padding: 2rem 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-header {
+        padding: 0 1.5rem 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #10b981, #3b82f6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-nav {
+        padding: 0 1rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.875rem 1rem;
+        margin: 4px 0;
+        color: #cbd5e1;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-item.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border-left: 4px solid #10b981;
+    }
+
+    .nav-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .logout-btn {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-form button {
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        padding: 0.875rem 1rem;
+        cursor: pointer;
+        text-align: left;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .logout-form button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .dashboard-main {
+        flex: 1;
+        margin-left: 250px;
+        min-height: 100vh;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1rem;
+        }
+
+        .dashboard-main {
+            margin-left: 0;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <a th:href="@{/web/dashboard}" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a th:href="@{/web/rides}" class="nav-item active">
+        <i class="fas fa-search"></i>
+        <span>Find Rides</span>
+      </a>
+      <a th:href="@{/web/rides/new}" class="nav-item">
+        <i class="fas fa-plus-circle"></i>
+        <span>Offer Ride</span>
+      </a>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+          <button type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="rides-container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Find Your Perfect Ride</h1>
+        <p>Browse available carpooling options for your next journey</p>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <form class="search-form">
+          <div class="form-group">
+            <label for="fromCity">From</label>
+            <input type="text" id="fromCity" class="search-input" placeholder="Departure city">
+          </div>
+
+          <div class="form-group">
+            <label for="toCity">To</label>
+            <input type="text" id="toCity" class="search-input" placeholder="Destination city">
+          </div>
+
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" class="search-input">
+          </div>
+
+          <div class="form-group">
+            <label for="seats">Seats</label>
+            <select id="seats" class="search-input">
+              <option value="">Any seats</option>
+              <option value="1">1 seat</option>
+              <option value="2">2 seats</option>
+              <option value="3">3+ seats</option>
+            </select>
+          </div>
+
+          <button type="submit" class="search-btn">
+            <i class="fas fa-search"></i>
+            Search Rides
+          </button>
+        </form>
+      </div>
+
+      <!-- Ride Grid -->
+      <div class="rides-grid" th:if="${rides != null and !rides.isEmpty()}">
+        <div th:each="ride : ${rides}" class="ride-card">
+          <!-- Status Badge -->
+          <div th:class="${ride.availableSeatsRemain > 0} ? 'ride-status status-available' : 'ride-status status-full'">
+            <span th:text="${ride.availableSeatsRemain} + ' seats left'">3 seats left</span>
+          </div>
+
+          <!-- Card Header -->
+          <div class="ride-card-header">
+            <div class="ride-route">
+              <div class="ride-from" th:text="${ride.fromCity}">Berlin</div>
+              <div class="ride-arrow">→</div>
+              <div class="ride-to" th:text="${ride.toCity}">Hamburg</div>
+            </div>
+            <div class="ride-date">
+              <i class="far fa-calendar-alt"></i>
+              <span th:text="${ride.startDatetime}">Tomorrow, 08:00 AM</span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="ride-card-body">
+            <div class="ride-info-grid">
+              <div class="ride-info-item">
+                <i class="fas fa-users"></i>
+                <span th:text="${ride.availableSeatsRemain} + '/' + ${ride.availableSeatsTotal} + ' seats'">3/4 seats</span>
+              </div>
+              <div class="ride-info-item">
+                <i class="fas fa-road"></i>
+                <span th:text="${ride.distanceKm} + ' km'">280 km</span>
+              </div>
+              <div class="ride-info-item">
+                <i class="fas fa-clock"></i>
+                <span th:text="${ride.durationMinutes} + ' min'">3h 30m</span>
+              </div>
+              <div class="ride-info-item">
+                <i class="fas fa-user-circle"></i>
+                <span th:text="${ride.driverFullName}">John Driver</span>
+              </div>
+            </div>
+
+            <div class="ride-price">
+              <div class="price-label">Price per seat</div>
+              <div class="price-amount">€<span th:text="${ride.pricePerSeat}">15.00</span></div>
+              <div class="price-unit">per person</div>
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="ride-card-footer">
+            <a th:href="@{/web/bookings/new/{id}(id=${ride.id})}"
+               class="book-btn"
+               th:disabled="${ride.availableSeatsRemain == 0}">
+              <i class="fas fa-ticket-alt"></i>
+              <span th:if="${ride.availableSeatsRemain > 0}">Book Now</span>
+              <span th:if="${ride.availableSeatsRemain == 0}">Fully Booked</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div th:if="${rides == null or rides.isEmpty()}" class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <h3>No rides available</h3>
+        <p>There are currently no rides matching your search criteria.</p>
+        <a th:href="@{/web/rides/new}" class="search-btn" style="display: inline-flex; width: auto;">
+          <i class="fas fa-plus-circle"></i>
+          Offer a Ride
+        </a>
+      </div>
+
+      <!-- Pagination (Example) -->
+      <div class="pagination" th:if="${rides != null and !rides.isEmpty()}">
+        <button class="page-btn">← Previous</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">Next →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Simple search functionality
+  document.addEventListener('DOMContentLoaded', function() {
+      const searchForm = document.querySelector('.search-form');
+      const rideCards = document.querySelectorAll('.ride-card');
+
+      if (searchForm) {
+          searchForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              // In a real app, this would submit to backend
+              alert('Search functionality would filter rides here');
+          });
+      }
+
+      // Add click animations to book buttons
+      const bookButtons = document.querySelectorAll('.book-btn');
+      bookButtons.forEach(button => {
+          button.addEventListener('click', function(e) {
+              if (this.disabled) {
+                  e.preventDefault();
+                  return;
+              }
+
+              // Add loading animation
+              const originalText = this.innerHTML;
+              this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+              this.disabled = true;
+
+              // Simulate API call
+              setTimeout(() => {
+                  this.innerHTML = originalText;
+                  this.disabled = false;
+              }, 1500);
+          });
+      });
+
+      // Add hover effects to ride cards
+      rideCards.forEach(card => {
+          card.addEventListener('mouseenter', function() {
+              this.style.transform = 'translateY(-5px)';
+          });
+
+          card.addEventListener('mouseleave', function() {
+              this.style.transform = 'translateY(0)';
+          });
+      });
+  });
+</script>
+</body>
+</html>
