@@ -189,15 +189,48 @@ public class WebController {
     // =========================
     @PostMapping("/web/rides")
     public String createRide(@Valid @ModelAttribute("rideRequest") RideRequestDTO request,
-                             BindingResult result, HttpSession session) {
-        if (result.hasErrors()) return "ride/new";
+                             BindingResult result, HttpSession session, Model model) {
+        System.out.println("=== CREATE RIDE START ===");
 
+        // FIRST: Get driverId from session and set it BEFORE validation
         Long driverId = (Long) session.getAttribute("userId");
-        if (driverId == null) return "redirect:/web/auth/login";
-        request.setDriverId(driverId);
+        if (driverId == null) {
+            System.out.println("No user ID in session, redirecting to login");
+            return "redirect:/web/auth/login";
+        }
 
-        rideService.createRide(request);
-        return "redirect:/web/rides";
+        System.out.println("Driver ID from session: " + driverId);
+        request.setDriverId(driverId); // SET IT HERE, BEFORE VALIDATION
+
+        System.out.println("Form data received:");
+        System.out.println("From City: " + request.getFromCity());
+        System.out.println("To City: " + request.getToCity());
+        System.out.println("Start Datetime: " + request.getStartDatetime());
+        System.out.println("Seats: " + request.getAvailableSeatsTotal());
+        System.out.println("Price: " + request.getPricePerSeat());
+        System.out.println("Driver ID: " + request.getDriverId());
+
+        // NOW validate
+        if (result.hasErrors()) {
+            System.out.println("Form has errors:");
+            result.getFieldErrors().forEach(error -> {
+                System.out.println(" - " + error.getField() + ": " + error.getDefaultMessage());
+            });
+            return "ride/new";
+        }
+
+        try {
+            System.out.println("Calling rideService.createRide()...");
+            rideService.createRide(request);
+            System.out.println("Ride created successfully!");
+
+            return "redirect:/web/rides";
+        } catch (Exception e) {
+            System.out.println("Error creating ride: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Failed to create ride: " + e.getMessage());
+            return "ride/new";
+        }
     }
 
     // =========================

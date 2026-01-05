@@ -28,41 +28,68 @@ public class RideService {
     // CREATE (DTO)
     // =========================
     public Ride createRide(RideRequestDTO dto) {
-        if (dto == null) throw new IllegalArgumentException("Ride data is required");
+        System.out.println("=== RIDE SERVICE: createRide ===");
+        System.out.println("DTO received: " + dto);
+
+        if (dto == null) {
+            System.out.println("Error: Ride data is null");
+            throw new IllegalArgumentException("Ride data is required");
+        }
 
         // Βρες driver
         if (dto.getDriverId() == null) {
+            System.out.println("Error: Driver id is null");
             throw new IllegalArgumentException("Driver id is required");
         }
-        User driver = userRepository.findById(dto.getDriverId())
-                .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
 
-        // Βασικές επικυρώσεις (ίδιες λογικά με αυτές που είχες)
+        System.out.println("Looking for driver with ID: " + dto.getDriverId());
+        User driver = userRepository.findById(dto.getDriverId())
+                .orElseThrow(() -> {
+                    System.out.println("Error: Driver not found with ID: " + dto.getDriverId());
+                    return new IllegalArgumentException("Driver not found");
+                });
+        System.out.println("Found driver: " + driver.getUsername());
+
+        // Βασικές επικυρώσεις
+        if (dto.getDriverId() == null) {
+            throw new IllegalArgumentException("Driver id is required");
+        }
+
         if (dto.getStartDatetime() == null) {
+            System.out.println("Error: Start datetime is null");
             throw new IllegalArgumentException("Start datetime is required");
         }
         if (dto.getFromCity() == null || dto.getToCity() == null) {
+            System.out.println("Error: Cities are null");
             throw new IllegalArgumentException("From city and To city are required");
         }
         if (dto.getAvailableSeatsTotal() == null || dto.getAvailableSeatsTotal() <= 0) {
+            System.out.println("Error: Invalid seats: " + dto.getAvailableSeatsTotal());
             throw new IllegalArgumentException("Available seats must be > 0");
         }
         if (dto.getPricePerSeat() == null || dto.getPricePerSeat().compareTo(BigDecimal.ZERO) <= 0) {
+            System.out.println("Error: Invalid price: " + dto.getPricePerSeat());
             throw new IllegalArgumentException("Price per seat must be > 0");
         }
+
+        System.out.println("All validations passed, creating ride entity...");
 
         Ride ride = RideMapper.fromRequestDTO(dto, driver);
 
         // στην αρχή όλα τα seats διαθέσιμα
         ride.setAvailableSeatsRemain(dto.getAvailableSeatsTotal());
 
-        // αρχικό status (όπως στο δικό σου service)
+        // αρχικό status
         ride.setStatus("PLANNED");
 
         // createdAt
         ride.setCreatedAt(LocalDateTime.now());
 
-        return rideRepository.save(ride);
+        System.out.println("Ride entity created, saving to database...");
+        Ride saved = rideRepository.save(ride);
+        System.out.println("Ride saved with ID: " + saved.getId());
+
+        return saved;
     }
 
     // =========================

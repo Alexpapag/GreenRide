@@ -5,25 +5,20 @@ import java.time.LocalDateTime;
 
 public class RideResponseDTO {
     private Long id;
-
     private Long driverId;
     private String driverUsername;
+    private String driverFullName; // ΠΡΟΣΘΗΚΗ ΑΥΤΗ
 
     private LocalDateTime startDatetime;
     private LocalDateTime endDatetime;
-
     private String fromCity;
     private String fromAddress;
-
     private String toCity;
     private String toAddress;
-
     private BigDecimal distanceKm;
     private Integer estimatedDurationMin;
-
     private Integer availableSeatsTotal;
     private Integer availableSeatsRemain;
-
     private BigDecimal pricePerSeat;
     private String status;
     private String weatherSummary;
@@ -38,6 +33,9 @@ public class RideResponseDTO {
 
     public String getDriverUsername() { return driverUsername; }
     public void setDriverUsername(String driverUsername) { this.driverUsername = driverUsername; }
+
+    public String getDriverFullName() { return driverFullName; }
+    public void setDriverFullName(String driverFullName) { this.driverFullName = driverFullName; }
 
     public LocalDateTime getStartDatetime() { return startDatetime; }
     public void setStartDatetime(LocalDateTime startDatetime) { this.startDatetime = startDatetime; }

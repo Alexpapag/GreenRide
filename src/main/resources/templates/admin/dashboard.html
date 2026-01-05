@@ -571,7 +571,7 @@
               <td>€<span th:text="${ride.pricePerSeat}">15.00</span></td>
               <td>
                                         <span class="status-badge" th:classappend="${ride.status == 'PLANNED'} ? 'status-active' :
-                                                                                  ${ride.status == 'COMPLETED'} ? 'status-closed' : 'status-suspended'}">
+                                                                                  (${ride.status == 'COMPLETED'} ? 'status-closed' : 'status-suspended')">
                                             <span th:text="${ride.status}">PLANNED</span>
                                         </span>
               </td>

@@ -215,7 +215,7 @@
             <div class="form-group">
               <label for="fromCity">
                 <i class="fas fa-map-marker-alt"></i>
-                From City
+                From City *
               </label>
               <input type="text"
                      id="fromCity"
@@ -230,7 +230,7 @@
             <div class="form-group">
               <label for="toCity">
                 <i class="fas fa-map-marker-alt"></i>
-                To City
+                To City *
               </label>
               <input type="text"
                      id="toCity"
@@ -247,13 +247,16 @@
           <div class="form-group">
             <label for="startDatetime">
               <i class="far fa-calendar-alt"></i>
-              Departure Date & Time
+              Departure Date & Time *
             </label>
             <input type="datetime-local"
                    id="startDatetime"
                    th:field="*{startDatetime}"
                    required>
             <div class="form-help">Select the date and time of departure</div>
+            <span th:if="${#fields.hasErrors('startDatetime')}"
+                  th:errors="*{startDatetime}"
+                  class="error-message"></span>
           </div>
 
           <!-- Seats and Price -->
@@ -261,7 +264,7 @@
             <div class="form-group">
               <label for="availableSeatsTotal">
                 <i class="fas fa-users"></i>
-                Total Seats Available
+                Total Seats Available *
               </label>
               <input type="number"
                      id="availableSeatsTotal"
@@ -270,14 +273,20 @@
                      max="8"
                      placeholder="e.g., 4"
                      required>
-              <div class="form-help">How many passengers can you take?</div>
+              <div class="form-help">How many passengers can you take? (1-8)</div>
+              <span th:if="${#fields.hasErrors('availableSeatsTotal')}"
+                    th:errors="*{availableSeatsTotal}"
+                    class="error-message"></span>
             </div>
 
             <div class="form-group">
               <label for="pricePerSeat">
                 <i class="fas fa-euro-sign"></i>
-                Price per Seat (€)
+                Price per Seat (€) *
               </label>
+              <input type="hidden"
+                     th:value="${session.userId}"
+                     th:field="*{driverId}">
               <input type="number"
                      id="pricePerSeat"
                      th:field="*{pricePerSeat}"
@@ -285,61 +294,11 @@
                      min="1"
                      placeholder="e.g., 15.00"
                      required>
-              <div class="form-help">Suggested: €0.10 per km</div>
+              <div class="form-help">Price per passenger in euros</div>
+              <span th:if="${#fields.hasErrors('pricePerSeat')}"
+                    th:errors="*{pricePerSeat}"
+                    class="error-message"></span>
             </div>
-          </div>
-
-          <!-- Distance (Optional) -->
-          <div class="form-group">
-            <label for="distanceKm">
-              <i class="fas fa-road"></i>
-              Distance (km) - Optional
-            </label>
-            <input type="number"
-                   id="distanceKm"
-                   th:field="*{distanceKm}"
-                   step="1"
-                   min="1"
-                   placeholder="e.g., 280">
-            <div class="form-help">Approximate distance in kilometers</div>
-          </div>
-
-          <!-- Additional Information -->
-          <div class="form-group">
-            <label for="description">
-              <i class="fas fa-comment-alt"></i>
-              Additional Information
-            </label>
-            <textarea id="description"
-                      th:field="*{description}"
-                      rows="3"
-                      placeholder="Any additional details about the ride (meeting point, luggage space, preferences, etc.)"></textarea>
-          </div>
-
-          <!-- Car Information -->
-          <div class="form-group">
-            <label for="carModel">
-              <i class="fas fa-car"></i>
-              Car Model - Optional
-            </label>
-            <input type="text"
-                   id="carModel"
-                   th:field="*{carModel}"
-                   placeholder="e.g., Toyota Prius 2020">
-          </div>
-
-          <!-- Terms and Conditions -->
-          <div class="form-group" style="margin-top: 2rem;">
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
-              <input type="checkbox" id="terms" required style="width: auto; margin-top: 3px;">
-              <div>
-                I agree to the <a href="#" style="color: #10b981;">GreenRide Terms of Service</a>
-                <div class="form-help">
-                  By offering a ride, you confirm that you have a valid driver's license,
-                  vehicle insurance, and agree to follow all traffic regulations.
-                </div>
-              </div>
-            </label>
           </div>
 
           <!-- Form Actions -->
@@ -363,71 +322,6 @@
       const form = document.getElementById('rideForm');
       const submitBtn = form.querySelector('.submit-btn');
 
-      // Form validation and price suggestion
-      const fromCityInput = document.getElementById('fromCity');
-      const toCityInput = document.getElementById('toCity');
-      const distanceInput = document.getElementById('distanceKm');
-      const priceInput = document.getElementById('pricePerSeat');
-
-      // Suggest price based on distance (0.10€ per km)
-      if (distanceInput && priceInput) {
-          distanceInput.addEventListener('input', function() {
-              if (this.value && !priceInput.value) {
-                  const suggestedPrice = (this.value * 0.1).toFixed(2);
-                  priceInput.placeholder = `Suggested: €${suggestedPrice}`;
-              }
-          });
-      }
-
-      // Auto-calculate distance if from/to are entered
-      // In a real app, this would call a geolocation API
-      function calculateDistance() {
-          if (fromCityInput.value && toCityInput.value && !distanceInput.value) {
-              // Mock distance calculation
-              const mockDistances = {
-                  'Berlin-Hamburg': 280,
-                  'Athens-Thessaloniki': 500,
-                  'Paris-Lyon': 465,
-                  'London-Manchester': 320
-              };
-
-              const route = `${fromCityInput.value}-${toCityInput.value}`;
-              if (mockDistances[route]) {
-                  distanceInput.value = mockDistances[route];
-                  const suggestedPrice = (mockDistances[route] * 0.1).toFixed(2);
-                  priceInput.placeholder = `Suggested: €${suggestedPrice}`;
-              }
-          }
-      }
-
-      if (fromCityInput && toCityInput) {
-          fromCityInput.addEventListener('blur', calculateDistance);
-          toCityInput.addEventListener('blur', calculateDistance);
-      }
-
-      // Form submission
-      form.addEventListener('submit', function(e) {
-          e.preventDefault();
-
-          // Validate terms
-          const termsCheckbox = document.getElementById('terms');
-          if (!termsCheckbox.checked) {
-              alert('Please agree to the Terms of Service');
-              termsCheckbox.focus();
-              return;
-          }
-
-          // Show loading state
-          const originalText = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Ride...';
-          submitBtn.disabled = true;
-
-          // Submit form after delay
-          setTimeout(() => {
-              form.submit();
-          }, 1500);
-      });
-
       // Set minimum datetime to now
       const datetimeInput = document.getElementById('startDatetime');
       if (datetimeInput) {
@@ -439,20 +333,24 @@
           const minutes = String(now.getMinutes()).padStart(2, '0');
 
           datetimeInput.min = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+          // Default: 1 hour from now
+          const future = new Date(now.getTime() + 60 * 60 * 1000);
+          const futureHours = String(future.getHours()).padStart(2, '0');
+          const futureMinutes = String(future.getMinutes()).padStart(2, '0');
+
+          datetimeInput.value = `${year}-${month}-${day}T${futureHours}:${futureMinutes}`;
       }
 
-      // Add focus effects
-      const inputs = form.querySelectorAll('input, textarea, select');
-      inputs.forEach(input => {
-          input.addEventListener('focus', function() {
-              this.style.borderColor = '#10b981';
-              this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-          });
+      // Form submission
+      form.addEventListener('submit', function(e) {
+          // Show loading state
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Ride...';
+          submitBtn.disabled = true;
 
-          input.addEventListener('blur', function() {
-              this.style.borderColor = '#e2e8f0';
-              this.style.boxShadow = 'none';
-          });
+          // Form will submit normally
+          // No need to prevent default since we removed terms checkbox
       });
   });
 </script>
