@@ -334,6 +334,25 @@
         </div>
       </div>
 
+      <!-- Map Visualization -->
+      <div th:if="${ride.distanceKm != null and ride.estimatedDurationMin != null}" style="margin-bottom: 2rem;">
+        <div id="map" style="height: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+          <div style="flex: 1; text-align: center;">
+            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.25rem;">Distance</div>
+            <div style="color: #0f172a; font-size: 1.5rem; font-weight: 700;">
+              <span th:text="${ride.distanceKm}">0</span> km
+            </div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.25rem;">Duration</div>
+            <div style="color: #0f172a; font-size: 1.5rem; font-weight: 700;">
+              <span th:text="${ride.estimatedDurationMin}">0</span> min
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Info Grid -->
       <div class="info-grid">
         <div class="info-card">
@@ -457,5 +476,146 @@
     </div>
   </main>
 </div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  document.addEventListener('DOMContentLoaded', function() {
+      const fromCity = /*[[${ride.fromCity}]]*/ '';
+      const toCity = /*[[${ride.toCity}]]*/ '';
+      const distanceKm = /*[[${ride.distanceKm}]]*/ null;
+      const durationMin = /*[[${ride.estimatedDurationMin}]]*/ null;
+
+      // Only initialize map if we have distance/duration data
+      if (distanceKm && durationMin) {
+          initializeMap(fromCity, toCity);
+      }
+  });
+
+  async function initializeMap(fromCity, toCity) {
+      try {
+          // Geocode both cities
+          const fromResponse = await fetch(`/geo/forward?q=${encodeURIComponent(fromCity)}`);
+          const fromData = await fromResponse.json();
+
+          const toResponse = await fetch(`/geo/forward?q=${encodeURIComponent(toCity)}`);
+          const toData = await toResponse.json();
+
+          // Get route details
+          const routeResponse = await fetch(`/geo/route?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`);
+          if (!routeResponse.ok) {
+              throw new Error('Failed to fetch route details');
+          }
+          const routeData = await routeResponse.json();
+
+          // Initialize map
+          const map = L.map('map').setView([fromData.lat, fromData.lon], 7);
+
+          // Add tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap contributors',
+              maxZoom: 19
+          }).addTo(map);
+
+          // Add markers
+          const startIcon = L.divIcon({
+              className: 'custom-marker',
+              html: '<div style="background: #10b981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">A</div>',
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
+          });
+
+          const endIcon = L.divIcon({
+              className: 'custom-marker',
+              html: '<div style="background: #ef4444; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">B</div>',
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
+          });
+
+          L.marker([fromData.lat, fromData.lon], {icon: startIcon})
+              .addTo(map)
+              .bindPopup(`<b>Start:</b> ${fromCity}`);
+
+          L.marker([toData.lat, toData.lon], {icon: endIcon})
+              .addTo(map)
+              .bindPopup(`<b>Destination:</b> ${toCity}`);
+
+          // Decode and draw polyline if available
+          if (routeData.polyline) {
+              const coordinates = decodePolyline(routeData.polyline);
+              const polyline = L.polyline(coordinates, {
+                  color: '#3b82f6',
+                  weight: 4,
+                  opacity: 0.7
+              }).addTo(map);
+
+              // Fit map to show entire route
+              map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+          } else {
+              // Fallback: draw straight line
+              const latlngs = [
+                  [fromData.lat, fromData.lon],
+                  [toData.lat, toData.lon]
+              ];
+              const polyline = L.polyline(latlngs, {
+                  color: '#3b82f6',
+                  weight: 4,
+                  opacity: 0.7,
+                  dashArray: '10, 10'
+              }).addTo(map);
+
+              map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+          }
+
+      } catch (error) {
+          console.error('Error initializing map:', error);
+          document.getElementById('map').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64748b;"><i class="fas fa-exclamation-triangle"></i> Unable to load map</div>';
+      }
+  }
+
+  // Decode polyline from OSRM (encoded polyline format)
+  function decodePolyline(encoded) {
+      const coordinates = [];
+      let index = 0;
+      let lat = 0;
+      let lng = 0;
+
+      while (index < encoded.length) {
+          let b;
+          let shift = 0;
+          let result = 0;
+
+          do {
+              b = encoded.charCodeAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+          } while (b >= 0x20);
+
+          const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+          lat += dlat;
+
+          shift = 0;
+          result = 0;
+
+          do {
+              b = encoded.charCodeAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+          } while (b >= 0x20);
+
+          const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+          lng += dlng;
+
+          coordinates.push([lat / 1e5, lng / 1e5]);
+      }
+
+      return coordinates;
+  }
+  /*]]>*/
+</script>
 </body>
 </html>

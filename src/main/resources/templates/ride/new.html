@@ -161,6 +161,100 @@
             justify-content: center;
         }
     }
+
+    /* Autocomplete Suggestions */
+    .autocomplete-suggestions {
+        position: absolute;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        width: 100%;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .suggestion-item:hover {
+        background: #f1f5f9;
+    }
+
+    .suggestion-item i {
+        color: #10b981;
+    }
+
+    /* Calculate Route Button */
+    .calculate-btn {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .calculate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .calculate-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Route Info Display */
+    .route-info {
+        margin-top: 16px;
+        padding: 16px;
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border-radius: 10px;
+        border-left: 4px solid #10b981;
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .route-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #065f46;
+    }
+
+    .route-detail i {
+        color: #10b981;
+        font-size: 1.2rem;
+    }
+
+    .route-detail strong {
+        color: #047857;
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        position: relative;
+    }
   </style>
 </head>
 <body>
@@ -230,13 +324,17 @@
             <div class="form-group">
               <label for="fromCity">
                 <i class="fas fa-map-marker-alt"></i>
-                From City *
+                From Location *
               </label>
               <input type="text"
                      id="fromCity"
                      th:field="*{fromCity}"
-                     placeholder="Departure city"
-                     required>
+                     placeholder="Start typing Athens location..."
+                     required
+                     autocomplete="off"
+                     list="fromLocationsList">
+              <datalist id="fromLocationsList"></datalist>
+              <div id="fromCitySuggestions" class="autocomplete-suggestions"></div>
               <span th:if="${#fields.hasErrors('fromCity')}"
                     th:errors="*{fromCity}"
                     class="error-message"></span>
@@ -245,18 +343,44 @@
             <div class="form-group">
               <label for="toCity">
                 <i class="fas fa-map-marker-alt"></i>
-                To City *
+                To Location *
               </label>
               <input type="text"
                      id="toCity"
                      th:field="*{toCity}"
-                     placeholder="Destination city"
-                     required>
+                     placeholder="Start typing Athens location..."
+                     required
+                     autocomplete="off"
+                     list="toLocationsList">
+              <datalist id="toLocationsList"></datalist>
+              <div id="toCitySuggestions" class="autocomplete-suggestions"></div>
               <span th:if="${#fields.hasErrors('toCity')}"
                     th:errors="*{toCity}"
                     class="error-message"></span>
             </div>
           </div>
+
+          <!-- Calculate Route Button -->
+          <div class="form-group">
+            <button type="button" id="calculateRouteBtn" class="calculate-btn">
+              <i class="fas fa-route"></i>
+              Calculate Route & Distance
+            </button>
+            <div id="routeInfo" class="route-info" style="display: none;">
+              <div class="route-detail">
+                <i class="fas fa-road"></i>
+                <span>Distance: <strong id="routeDistance">-</strong> km</span>
+              </div>
+              <div class="route-detail">
+                <i class="fas fa-clock"></i>
+                <span>Duration: <strong id="routeDuration">-</strong> min</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden fields for distance and duration -->
+          <input type="hidden" id="distanceKm" th:field="*{distanceKm}">
+          <input type="hidden" id="estimatedDurationMin" th:field="*{estimatedDurationMin}">
 
           <!-- Date and Time -->
           <div class="form-group">
@@ -336,6 +460,14 @@
   document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('rideForm');
       const submitBtn = form.querySelector('.submit-btn');
+      const fromCityInput = document.getElementById('fromCity');
+      const toCityInput = document.getElementById('toCity');
+      const calculateBtn = document.getElementById('calculateRouteBtn');
+      const routeInfo = document.getElementById('routeInfo');
+      const routeDistance = document.getElementById('routeDistance');
+      const routeDuration = document.getElementById('routeDuration');
+      const distanceKmInput = document.getElementById('distanceKm');
+      const durationMinInput = document.getElementById('estimatedDurationMin');
 
       // Set minimum datetime to now
       const datetimeInput = document.getElementById('startDatetime');
@@ -356,6 +488,137 @@
 
           datetimeInput.value = `${year}-${month}-${day}T${futureHours}:${futureMinutes}`;
       }
+
+      // Load Athens locations on page load
+      let athensLocations = [];
+
+      fetch('/geo/athens/locations')
+          .then(response => response.json())
+          .then(locations => {
+              athensLocations = locations;
+              populateDatalist('fromLocationsList', locations);
+              populateDatalist('toLocationsList', locations);
+          })
+          .catch(error => console.error('Error loading Athens locations:', error));
+
+      function populateDatalist(datalistId, locations) {
+          const datalist = document.getElementById(datalistId);
+          datalist.innerHTML = '';
+          locations.forEach(loc => {
+              const option = document.createElement('option');
+              option.value = loc.name;
+              option.textContent = loc.displayName;
+              datalist.appendChild(option);
+          });
+      }
+
+      // Autocomplete functionality with Athens locations
+      let autocompleteTimeout;
+
+      function setupAutocomplete(inputElement, suggestionsElement) {
+          inputElement.addEventListener('input', function() {
+              clearTimeout(autocompleteTimeout);
+              const query = this.value.trim();
+
+              if (query.length < 2) {
+                  suggestionsElement.innerHTML = '';
+                  suggestionsElement.style.display = 'none';
+                  return;
+              }
+
+              autocompleteTimeout = setTimeout(() => {
+                  // Search Athens locations first
+                  fetch(`/geo/athens/locations?q=${encodeURIComponent(query)}`)
+                      .then(response => response.json())
+                      .then(locations => {
+                          if (locations && locations.length > 0) {
+                              suggestionsElement.innerHTML = locations.slice(0, 5).map(loc => `
+                                  <div class="suggestion-item" data-name="${loc.name}">
+                                      <i class="fas fa-map-marker-alt"></i>
+                                      ${loc.displayName}
+                                  </div>
+                              `).join('');
+                              suggestionsElement.style.display = 'block';
+
+                              // Click handlers for suggestions
+                              suggestionsElement.querySelectorAll('.suggestion-item').forEach(item => {
+                                  item.addEventListener('click', function() {
+                                      inputElement.value = this.dataset.name;
+                                      suggestionsElement.style.display = 'none';
+                                  });
+                              });
+                          } else {
+                              suggestionsElement.style.display = 'none';
+                          }
+                      })
+                      .catch(error => {
+                          console.error('Autocomplete error:', error);
+                          suggestionsElement.style.display = 'none';
+                      });
+              }, 300);
+          });
+
+          // Hide suggestions when clicking outside
+          document.addEventListener('click', function(e) {
+              if (!inputElement.contains(e.target) && !suggestionsElement.contains(e.target)) {
+                  suggestionsElement.style.display = 'none';
+              }
+          });
+      }
+
+      setupAutocomplete(fromCityInput, document.getElementById('fromCitySuggestions'));
+      setupAutocomplete(toCityInput, document.getElementById('toCitySuggestions'));
+
+      // Calculate route
+      calculateBtn.addEventListener('click', function() {
+          const fromCity = fromCityInput.value.trim();
+          const toCity = toCityInput.value.trim();
+
+          if (!fromCity || !toCity) {
+              alert('Please select both departure and destination locations');
+              return;
+          }
+
+          // Show loading state
+          calculateBtn.disabled = true;
+          calculateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+
+          // Use Athens-specific endpoint for faster calculation
+          fetch(`/geo/athens/route?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`)
+              .then(response => {
+                  if (!response.ok) {
+                      return response.text().then(text => {
+                          throw new Error(text || 'Failed to calculate route');
+                      });
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  console.log('Route data received:', data);
+
+                  // Update UI
+                  routeDistance.textContent = data.distanceKm;
+                  routeDuration.textContent = data.durationMinutes;
+                  routeInfo.style.display = 'block';
+
+                  // Update hidden fields
+                  distanceKmInput.value = data.distanceKm;
+                  durationMinInput.value = data.durationMinutes;
+
+                  // Reset button
+                  calculateBtn.disabled = false;
+                  calculateBtn.innerHTML = '<i class="fas fa-check"></i> Route Calculated';
+                  calculateBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+              })
+              .catch(error => {
+                  console.error('Route calculation error:', error);
+                  alert('Failed to calculate route. Please select valid Athens locations.\n\nError: ' + error.message);
+
+                  // Reset button
+                  calculateBtn.disabled = false;
+                  calculateBtn.innerHTML = '<i class="fas fa-route"></i> Calculate Route & Distance';
+              });
+      });
 
       // Form submission
       form.addEventListener('submit', function(e) {
