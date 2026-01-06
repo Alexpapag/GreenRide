@@ -4,4 +4,9 @@ import org.example.greenride.dto.geo.GeoLocationResponseDTO;
 
 public interface GeoLocationService {
     GeoLocationResponseDTO forwardGeocode(String query);
+    RouteDetails getRouteDetails(String from, String to);  // New
+
+    // New record/DTO for response
+    public record RouteDetails(Double distanceKm, Integer durationMinutes, String polyline) {}
+
 }

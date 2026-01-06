@@ -29,7 +29,7 @@ public class Booking {
     @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
-    // PENDING, CONFIRMED, CANCELLED
+    // PENDING, CONFIRMED, CANCELLED, completed
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 

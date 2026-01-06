@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Booking status badges */
+    .booking-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-confirmed {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-cancelled {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-completed {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* Booking card */
+    .booking-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .booking-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .booking-route {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .booking-date {
+        font-size: 0.9rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .booking-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+    }
+
+    .btn-view {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: #f8fafc;
+        color: #ef4444;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-cancel:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #e2e8f0;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        color: #475569;
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <a th:href="@{/web/dashboard}" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a th:href="@{/web/rides}" class="nav-item">
+        <i class="fas fa-search"></i>
+        <span>Find Rides</span>
+      </a>
+      <a th:href="@{/web/rides/new}" class="nav-item">
+        <i class="fas fa-plus-circle"></i>
+        <span>Offer Ride</span>
+      </a>
+      <a th:href="@{/web/bookings/list}" class="nav-item active">
+        <i class="fas fa-ticket-alt"></i>
+        <span>My Bookings</span>
+      </a>
+      <a th:href="@{/web/my-rides}"
+         class="nav-item"
+         th:if="${session.userId != null}">
+        <i class="fas fa-car-side"></i>
+        <span>My Rides</span>
+        <!-- Show pending badge if there are pending bookings -->
+        <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+              class="pending-badge" style="margin-left: auto;">
+        <span th:text="${pendingBookingsCount}"></span>
+    </span>
+      </a>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+          <button type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="rides-container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>My Bookings</h1>
+        <p th:text="'Hello, ' + ${username} + '! Here are all your carpooling bookings.'">
+          Hello! Here are all your carpooling bookings.
+        </p>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <span>Filter by status:</span>
+        <select class="filter-select" id="statusFilter">
+          <option value="">All Bookings</option>
+          <option value="PENDING">Pending</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="CANCELLED">Cancelled</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
+      </div>
+
+      <!-- Bookings List -->
+      <div th:if="${bookings != null and !bookings.isEmpty()}">
+        <div th:each="booking : ${bookings}" class="booking-card" th:data-status="${booking.status}">
+          <div class="booking-header">
+            <div>
+              <div class="booking-route" th:text="${booking.ride.fromCity} + ' → ' + ${booking.ride.toCity}">
+                Berlin → Hamburg
+              </div>
+              <div class="booking-date">
+                <i class="far fa-calendar-alt"></i>
+                <span th:text="${booking.bookedAt}">Booked on: 2023-12-15 14:30</span>
+              </div>
+            </div>
+            <div>
+              <span th:class="'booking-status status-' + ${booking.status.toLowerCase()}"
+                    th:text="${booking.status}">CONFIRMED</span>
+            </div>
+          </div>
+
+          <div class="booking-details">
+            <div class="detail-item">
+              <span class="detail-label">Driver</span>
+              <span class="detail-value" th:text="${booking.ride.driver.fullName}">John Driver</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Departure</span>
+              <span class="detail-value" th:text="${booking.ride.startDatetime}">2023-12-16 08:00</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Seats</span>
+              <span class="detail-value" th:text="${booking.seatsBooked}">2</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Total Price</span>
+              <span class="detail-value" style="color: #10b981;" th:text="'€' + ${booking.totalPrice}">€30.00</span>
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            <a th:href="@{/web/bookings/{id}(id=${booking.id})}" class="btn-small btn-view">
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+
+            <form th:action="@{/web/bookings/{id}/cancel(id=${booking.id})}"
+                  method="post"
+                  th:if="${booking.status == 'PENDING' or booking.status == 'CONFIRMED'}"
+                  class="cancel-form">
+              <button type="submit"
+                      class="btn-small btn-cancel"
+                      onclick="return confirm('Are you sure you want to cancel this booking?')">
+                <i class="fas fa-times"></i>
+                Cancel Booking
+              </button>
+            </form>
+
+            <a th:href="@{'/web/rides/' + ${booking.ride.id}}" class="btn-small btn-view">
+              <i class="fas fa-car"></i>
+              View Ride
+            </a>
+          </div>
+
+          <!-- Cancellation info -->
+          <div th:if="${booking.status == 'CANCELLED' and booking.cancelledAt != null}"
+               style="margin-top: 1rem; padding: 0.75rem; background: #fef2f2; border-radius: 6px; font-size: 0.9rem; color: #dc2626;">
+            <i class="fas fa-ban"></i>
+            Cancelled on: <span th:text="${booking.cancelledAt}"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div th:if="${bookings == null or bookings.isEmpty()}" class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <h3>No bookings yet</h3>
+        <p>You haven't made any bookings yet. Start by finding a ride!</p>
+        <a th:href="@{/web/rides}" class="search-btn" style="display: inline-flex; width: auto;">
+          <i class="fas fa-search"></i>
+          Find Rides
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Filter bookings by status
+      const statusFilter = document.getElementById('statusFilter');
+      if (statusFilter) {
+          statusFilter.addEventListener('change', function() {
+              const selectedStatus = this.value;
+              const bookingCards = document.querySelectorAll('.booking-card');
+
+              bookingCards.forEach(card => {
+                  const cardStatus = card.getAttribute('data-status');
+                  if (!selectedStatus || cardStatus === selectedStatus) {
+                      card.style.display = 'block';
+                  } else {
+                      card.style.display = 'none';
+                  }
+              });
+          });
+      }
+
+      // Auto-dismiss alerts after 5 seconds
+      setTimeout(function() {
+          const alerts = document.querySelectorAll('.alert');
+          alerts.forEach(alert => {
+              if (alert.classList.contains('show')) {
+                  alert.classList.remove('show');
+              }
+          });
+      }, 5000);
+
+      // Add confirmation for cancellation
+      const cancelForms = document.querySelectorAll('.cancel-form');
+      cancelForms.forEach(form => {
+          form.addEventListener('submit', function(e) {
+              if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+                  e.preventDefault();
+              }
+          });
+      });
+  });
+</script>
+</body>
+</html>

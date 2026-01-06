@@ -190,6 +190,21 @@
         <i class="fas fa-plus-circle"></i>
         <span>Offer Ride</span>
       </a>
+      <a th:href="@{/web/bookings/list}" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        <span>My Bookings</span>
+      </a>
+      <a th:href="@{/web/my-rides}"
+         class="nav-item"
+         th:if="${session.userId != null}">
+        <i class="fas fa-car-side"></i>
+        <span>My Rides</span>
+        <!-- Show pending badge if there are pending bookings -->
+        <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+              class="pending-badge" style="margin-left: auto;">
+        <span th:text="${pendingBookingsCount}"></span>
+    </span>
+      </a>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
           <button type="submit">

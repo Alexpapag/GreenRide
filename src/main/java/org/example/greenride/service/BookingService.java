@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -19,13 +20,15 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
+    private final RideService rideService;
 
     public BookingService(BookingRepository bookingRepository,
                           RideRepository rideRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository, RideService rideService) {
         this.bookingRepository = bookingRepository;
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
+        this.rideService = rideService;
     }
 
     // CREATE (DTO)
@@ -113,5 +116,73 @@ public class BookingService {
         }
         bookingRepository.deleteById(id);
     }
+
+    // Get all bookings for a driver's rides
+    public List<Booking> getBookingsForDriverRides(Long driverId) {
+        // Get all rides by this driver
+        List<Ride> driverRides = rideService.getRidesByDriver(driverId);
+
+        // Get all bookings for these rides
+        return driverRides.stream()
+                .flatMap(ride -> bookingRepository.findByRideId(ride.getId()).stream())
+                .filter(booking -> !"CANCELLED".equals(booking.getStatus())) // Exclude cancelled
+                .collect(Collectors.toList());
+    }
+
+    // Update booking status (for driver to confirm/reject)
+    public Booking updateBookingStatus(Long bookingId, String newStatus, Long driverId) {
+        Booking booking = getBookingById(bookingId);
+
+        // Verify the driver owns this ride
+        if (!booking.getRide().getDriver().getId().equals(driverId)) {
+            throw new IllegalArgumentException("Only the ride driver can update booking status");
+        }
+
+        // Validate status transition
+        if ("PENDING".equals(booking.getStatus())) {
+            if ("CONFIRMED".equals(newStatus)) {
+                booking.setStatus(newStatus);
+            } else if ("REJECTED".equals(newStatus)) {
+                // Return seats if rejected
+                Ride ride = booking.getRide();
+                if (ride != null && booking.getSeatsBooked() != null) {
+                    Integer remain = ride.getAvailableSeatsRemain() == null ? 0 : ride.getAvailableSeatsRemain();
+                    ride.setAvailableSeatsRemain(remain + booking.getSeatsBooked());
+                    rideRepository.save(ride);
+                }
+                booking.setStatus(newStatus);
+            } else {
+                throw new IllegalArgumentException("Invalid status transition from PENDING");
+            }
+        } else if ("CONFIRMED".equals(booking.getStatus())) {
+            if ("COMPLETED".equals(newStatus)) {
+                booking.setStatus(newStatus);
+            } else if ("REJECTED".equals(newStatus)) {
+                // Return seats if rejected after confirmation
+                Ride ride = booking.getRide();
+                if (ride != null && booking.getSeatsBooked() != null) {
+                    Integer remain = ride.getAvailableSeatsRemain() == null ? 0 : ride.getAvailableSeatsRemain();
+                    ride.setAvailableSeatsRemain(remain + booking.getSeatsBooked());
+                    rideRepository.save(ride);
+                }
+                booking.setStatus(newStatus);
+            } else {
+                throw new IllegalArgumentException("Invalid status transition from CONFIRMED");
+            }
+        } else {
+            throw new IllegalArgumentException("Cannot update status of " + booking.getStatus() + " booking");
+        }
+
+        return bookingRepository.save(booking);
+    }
+
+    // Get pending bookings count for driver
+    public long getPendingBookingsCountForDriver(Long driverId) {
+        return getBookingsForDriverRides(driverId).stream()
+                .filter(b -> "PENDING".equals(b.getStatus()))
+                .count();
+    }
+
+
 }
 

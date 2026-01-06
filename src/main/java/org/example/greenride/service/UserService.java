@@ -1,8 +1,10 @@
 package org.example.greenride.service;
 
+import jakarta.servlet.http.HttpSession;
 import org.example.greenride.entity.User;
 import org.example.greenride.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,5 +58,28 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
         userRepository.deleteById(id);
+    }
+
+    public User getCurrentUser(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            throw new RuntimeException("No active session found");
+        }
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("User not logged in");
+        }
+
+        return getUserById(userId);
+    }
+
+    // Also add this for session-based user retrieval
+    public User getCurrentUserFromSession(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("User not logged in");
+        }
+        return getUserById(userId);
     }
 }

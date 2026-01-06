@@ -22,4 +22,10 @@ public class GeoController {
     public GeoLocationResponseDTO forward(@RequestParam("q") String query) {
         return geoLocationService.forwardGeocode(query);
     }
+
+    @PostMapping("/route")  // Or GET with params
+    @Operation(summary = "Get route details", description = "Distance, time, polyline for map")
+    public GeoLocationService.RouteDetails getRoute(@RequestParam String from, @RequestParam String to) {
+        return geoLocationService.getRouteDetails(from, to);
+    }
 }

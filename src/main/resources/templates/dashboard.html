@@ -45,6 +45,21 @@
         <i class="fas fa-plus-circle"></i>
         <span>Offer Ride</span>
       </a>
+      <a th:href="@{/web/bookings/list}" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        <span>My Bookings</span>
+      </a>
+      <a th:href="@{/web/my-rides}"
+         class="nav-item"
+         th:if="${session.userId != null}">
+        <i class="fas fa-car-side"></i>
+        <span>My Rides</span>
+        <!-- Show pending badge if there are pending bookings -->
+        <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+              class="pending-badge" style="margin-left: auto;">
+        <span th:text="${pendingBookingsCount}"></span>
+    </span>
+      </a>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
             <button type="submit">
@@ -137,9 +152,9 @@
           </div>
         </div>
         <div class="ride-actions">
-          <button class="btn-small" onclick="alert('Ride details feature coming soon')">
+          <a th:href="@{'/web/rides/' + ${ride.id}}" class="btn-small">
             View Details
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -156,7 +171,7 @@
           <div class="ride-details">
             <span th:text="'Driver: ' + ${booking.ride.driver.fullName}">Driver: John Smith</span>
             <span th:text="'€' + ${booking.totalPrice}">€45.00</span>
-            <span th:text="${booking.bookingStatus}">Confirmed</span>
+            <span th:text="${booking.status}">Confirmed</span>
           </div>
         </div>
       </div>
@@ -208,7 +223,7 @@
           <p>Share your journey with others as a driver</p>
         </a>
 
-        <a th:href="@{/web/dashboard}" class="action-card">
+        <a th:href="@{/web/bookings/list}" class="action-card">
           <i class="fas fa-history"></i>
           <h4>My History</h4>
           <p>View your ride and booking history</p>

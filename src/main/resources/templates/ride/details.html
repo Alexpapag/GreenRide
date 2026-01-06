@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${ride.fromCity} + ' → ' + ${ride.toCity} + ' - GreenRide'">Ride Details</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .dashboard-sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        padding: 2rem 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-header {
+        padding: 0 1.5rem 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #10b981, #3b82f6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-nav {
+        padding: 0 1rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.875rem 1rem;
+        margin: 4px 0;
+        color: #cbd5e1;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-item.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border-left: 4px solid #10b981;
+    }
+
+    .nav-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .logout-btn {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-form button {
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        padding: 0.875rem 1rem;
+        cursor: pointer;
+        text-align: left;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .logout-form button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .dashboard-main {
+        flex: 1;
+        margin-left: 250px;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .details-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .ride-header {
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .route-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .ride-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .ride-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .info-card {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .info-card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-item {
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .info-label {
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+    
+    .btn-secondary { background: white; color: #475569; border: 1px solid #e2e8f0; }
+    .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
+    
+    .btn-success { background: #10b981; color: white; }
+    .btn-success:hover { background: #059669; transform: translateY(-1px); }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .bg-warning { background: #fef3c7; color: #92400e; }
+    .bg-success { background: #d1fae5; color: #065f46; }
+    .bg-danger { background: #fee2e2; color: #991b1b; }
+    .bg-secondary { background: #f1f5f9; color: #475569; }
+
+    .passenger-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .passenger-table th {
+        text-align: left;
+        padding: 1rem;
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .passenger-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-sidebar { width: 100%; height: auto; position: relative; }
+        .dashboard-main { margin-left: 0; padding: 1rem; }
+        .dashboard-container { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-car"></i></div>
+        <div class="logo-text">GreenRide</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/web/dashboard}" class="nav-item">
+        <i class="fas fa-home"></i><span>Dashboard</span>
+      </a>
+      <a th:href="@{/web/rides}" class="nav-item active">
+        <i class="fas fa-search"></i><span>Find Rides</span>
+      </a>
+      <a th:href="@{/web/rides/new}" class="nav-item">
+        <i class="fas fa-plus-circle"></i><span>Offer Ride</span>
+      </a>
+      <a th:href="@{/web/bookings/list}" class="nav-item">
+        <i class="fas fa-ticket-alt"></i><span>My Bookings</span>
+      </a>
+      <a th:href="@{/web/my-rides}" class="nav-item" th:if="${session.userId != null}">
+        <i class="fas fa-car-side"></i><span>My Rides</span>
+      </a>
+      <div class="logout-btn">
+        <form th:action="@{/web/logout}" method="post" class="logout-form">
+          <button type="submit"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </form>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="details-card">
+      <!-- Ride Header -->
+      <div class="ride-header">
+        <h1 class="route-title" th:text="${ride.fromCity} + ' → ' + ${ride.toCity}"></h1>
+        <div class="ride-meta">
+          <span><i class="far fa-calendar-alt"></i> <span th:text="${#temporals.format(ride.startDatetime, 'dd MMM yyyy')}"></span></span>
+          <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(ride.startDatetime, 'HH:mm')}"></span></span>
+          <span><i class="fas fa-users"></i> <span th:text="${ride.availableSeatsRemain} + '/' + ${ride.availableSeatsTotal}"></span> seats</span>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="info-grid">
+        <div class="info-card">
+          <h3><i class="fas fa-info-circle"></i> Ride Details</h3>
+          <div class="info-item">
+            <span class="info-label">Driver</span>
+            <span class="info-value" th:text="${ride.driver?.fullName ?: ride.driver?.username}"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Status</span>
+            <span th:class="'badge ' + (${ride.status == 'PLANNED' ? 'bg-success' : 'bg-secondary'})" th:text="${ride.status}"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Price</span>
+            <span class="info-value">€<span th:text="${ride.pricePerSeat}"></span></span>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-road"></i> Trip Details</h3>
+          <div class="info-item">
+            <span class="info-label">From</span>
+            <span class="info-value" th:text="${ride.fromCity}"></span>
+          </div>
+          <div class="info-item" th:if="${ride.fromAddress}">
+            <span class="info-label">Address</span>
+            <span class="info-value" th:text="${ride.fromAddress}"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">To</span>
+            <span class="info-value" th:text="${ride.toCity}"></span>
+          </div>
+          <div class="info-item" th:if="${ride.toAddress}">
+            <span class="info-label">Address</span>
+            <span class="info-value" th:text="${ride.toAddress}"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <a th:href="@{/web/rides}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <th:block th:if="${isDriver}">
+          <a th:href="@{/web/my-rides}" class="btn btn-primary">
+            <i class="fas fa-car-side"></i> Manage My Rides
+          </a>
+        </th:block>
+
+        <th:block th:unless="${isDriver}">
+          <a th:href="@{'/web/bookings/new/' + ${ride.id}}" th:if="${canBook}" class="btn btn-success">
+            <i class="fas fa-bookmark"></i> Book Now
+          </a>
+          <div th:if="${alreadyBooked}" class="btn btn-secondary" style="opacity: 0.7; cursor: not-allowed;">
+            <i class="fas fa-check"></i> Already Booked
+          </div>
+        </th:block>
+      </div>
+
+      <!-- Bookings List (for drivers) -->
+      <div th:if="${isDriver and bookings != null and !bookings.isEmpty()}" style="margin-top: 3rem;">
+        <h3 style="color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;">
+          <i class="fas fa-users"></i> Passenger Bookings
+        </h3>
+        <table class="passenger-table">
+          <thead>
+            <tr>
+              <th>Passenger</th>
+              <th>Seats</th>
+              <th>Status</th>
+              <th>Booked At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="booking : ${bookings}">
+              <td th:text="${booking.passenger?.fullName ?: booking.passenger?.username}"></td>
+              <td th:text="${booking.seatsBooked}"></td>
+              <td>
+                <span th:class="'badge ' + (${booking.status == 'PENDING' ? 'bg-warning' : (booking.status == 'CONFIRMED' ? 'bg-success' : 'bg-danger')})"
+                      th:text="${booking.status}"></span>
+              </td>
+              <td th:text="${#temporals.format(booking.bookedAt, 'dd MMM HH:mm')}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

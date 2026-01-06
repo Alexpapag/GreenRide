@@ -17,6 +17,7 @@ public final class RideMapper {
         if (r.getDriver() != null) {
             dto.setDriverId(r.getDriver().getId());
             dto.setDriverUsername(r.getDriver().getUsername());
+            dto.setDriverFullName(r.getDriver().getFullName());
         }
 
         dto.setStartDatetime(r.getStartDatetime());

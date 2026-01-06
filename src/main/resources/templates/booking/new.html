@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Ride - GreenRide</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Booking specific styles */
+        .booking-summary {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 1rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .price-display {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b98115, #3b82f615);
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .price-unit {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: normal;
+        }
+
+        .seats-input {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .seats-input .form-group {
+            flex: 1;
+        }
+
+        .seat-counter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .terms-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .terms-text {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .terms-text a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="logo-text">GreenRide</div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <a th:href="@{/web/dashboard}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a th:href="@{/web/rides}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Find Rides</span>
+            </a>
+            <a th:href="@{/web/rides/new}" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Offer Ride</span>
+            </a>
+            <a th:href="@{/web/bookings/my-bookings}" class="nav-item active">
+                <i class="fas fa-ticket-alt"></i>
+                <span>My Bookings</span>
+            </a>
+            <a th:href="@{/web/my-rides}"
+               class="nav-item"
+               th:if="${session.userId != null}">
+                <i class="fas fa-car-side"></i>
+                <span>My Rides</span>
+                <!-- Show pending badge if there are pending bookings -->
+                <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+                      class="pending-badge" style="margin-left: auto;">
+        <span th:text="${pendingBookingsCount}"></span>
+    </span>
+            </a>
+            <div class="logout-btn">
+                <form th:action="@{/web/logout}" method="post" class="logout-form">
+                    <button type="submit">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="form-container">
+            <!-- Success/Error Messages -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+
+            <div class="form-card">
+                <h1>Book Your Ride</h1>
+                <p>Complete your booking for this carpooling journey</p>
+
+                <!-- Ride Summary -->
+                <div class="booking-summary" th:if="${ride}">
+                    <h3>Ride Details</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Route</span>
+                            <span class="summary-value" th:text="${ride.fromCity} + ' → ' + ${ride.toCity}"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Departure</span>
+                            <span class="summary-value" th:text="${ride.startDatetime}"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Driver</span>
+                            <span class="summary-value" th:text="${ride.driver.fullName}"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Available Seats</span>
+                            <span class="summary-value" th:text="${ride.availableSeatsRemain}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <form th:action="@{/web/bookings}" th:object="${bookingRequest}" method="post" id="bookingForm">
+                    <input type="hidden" th:field="*{rideId}">
+                    <input type="hidden" th:field="*{passengerId}">
+
+                    <!-- Seat Selection -->
+                    <div class="seats-input">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="seatsRequested">
+                                <i class="fas fa-users"></i>
+                                Number of Seats *
+                            </label>
+                            <input type="number"
+                                   id="seatsRequested"
+                                   th:field="*{seatsRequested}"
+                                   th:attr="max=${maxSeats}"
+                                   min="1"
+                                   placeholder="e.g., 2"
+                                   required
+                                   oninput="calculatePrice()">
+                            <div class="form-help">
+                                Maximum <span th:text="${maxSeats}" id="maxSeats"></span> seats available
+                            </div>
+                            <span th:if="${#fields.hasErrors('seatsRequested')}"
+                                  th:errors="*{seatsRequested}"
+                                  class="error-message"></span>
+                        </div>
+
+                        <div class="seat-counter">
+                            <i class="fas fa-chair"></i>
+                            <span>Max: <span th:text="${maxSeats}"></span></span>
+                        </div>
+                    </div>
+
+                    <!-- Price Calculation -->
+                    <div class="price-display" th:if="${ride}">
+                        <div class="price-label">Total Price</div>
+                        <div class="price-amount">€<span id="totalPrice">0.00</span></div>
+                        <div class="price-unit" id="pricePerSeatUnit" th:text="'€' + ${ride.pricePerSeat} + ' per seat'"></div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="terms-container">
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms" class="terms-text">
+                                I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms & Conditions</a>
+                                and understand that cancellation may be subject to fees if done within 2 hours of departure time.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-check-circle"></i>
+                            Confirm Booking
+                        </button>
+                        <a th:href="@{/web/rides}" class="cancel-btn">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Terms Modal (Simplified) -->
+<div class="modal fade" id="termsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms & Conditions</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h6>GreenRide Carpooling Agreement</h6>
+                <p>By booking this ride, you agree to:</p>
+                <ul>
+                    <li>Arrive on time at the designated meeting point</li>
+                    <li>Respect the driver's vehicle and rules</li>
+                    <li>Pay the agreed price promptly</li>
+                    <li>Cancel at least 2 hours before departure to avoid fees</li>
+                    <li>Follow all traffic and safety regulations</li>
+                </ul>
+                <p>The driver reserves the right to refuse passengers who violate these terms.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        calculatePrice();
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('show')) {
+                    alert.classList.remove('show');
+                }
+            });
+        }, 5000);
+    });
+
+    function calculatePrice() {
+        const pricePerSeat = [[${ride?.pricePerSeat}]];
+        const seatsInput = document.getElementById('seatsRequested');
+        const totalPriceSpan = document.getElementById('totalPrice');
+        const maxSeats = [[${maxSeats}]];
+
+        if (pricePerSeat && seatsInput && totalPriceSpan) {
+            let seats = parseInt(seatsInput.value) || 0;
+
+            // Validate against max seats
+            if (seats > maxSeats) {
+                seats = maxSeats;
+                seatsInput.value = maxSeats;
+            }
+
+            const totalPrice = (pricePerSeat * seats).toFixed(2);
+            totalPriceSpan.textContent = totalPrice;
+        }
+    }
+
+    // Form submission with loading state
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+
+            // Validate terms checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                e.preventDefault();
+                alert('Please agree to the Terms & Conditions');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+
+            // Form will submit normally
+        });
+    }
+</script>
+</body>
+</html>

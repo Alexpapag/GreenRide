@@ -6,6 +6,7 @@
   <title>Find Rides - GreenRide</title>
   <link th:href="@{/css/app.css}" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
     /* Dashboard Layout for consistency */
     body {
@@ -185,6 +186,21 @@
         <i class="fas fa-plus-circle"></i>
         <span>Offer Ride</span>
       </a>
+      <a th:href="@{/web/bookings/list}" class="nav-item">
+        <i class="fas fa-ticket-alt"></i>
+        <span>My Bookings</span>
+      </a>
+      <a th:href="@{/web/my-rides}"
+         class="nav-item"
+         th:if="${session.userId != null}">
+        <i class="fas fa-car-side"></i>
+        <span>My Rides</span>
+        <!-- Show pending badge if there are pending bookings -->
+        <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+              class="pending-badge" style="margin-left: auto;">
+        <span th:text="${pendingBookingsCount}"></span>
+    </span>
+      </a>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
           <button type="submit">
@@ -270,15 +286,15 @@
               </div>
               <div class="ride-info-item">
                 <i class="fas fa-road"></i>
-                <span th:text="${ride.distanceKm} + ' km'">280 km</span>
+                <span th:text="${ride.distanceKm != null ? ride.distanceKm + ' km' : 'N/A'}">280 km</span>
               </div>
               <div class="ride-info-item">
                 <i class="fas fa-clock"></i>
-                <td th:text="${ride.estimatedDurationMin}"></td>
+                <span th:text="${ride.estimatedDurationMin != null ? ride.estimatedDurationMin + ' min' : 'N/A'}">45 min</span>
               </div>
               <div class="ride-info-item">
                 <i class="fas fa-user-circle"></i>
-                <span th:text="${ride.driverFullName}">John Driver</span>
+                <span th:text="${ride.driverFullName ?: ride.driverUsername}">John Driver</span>
               </div>
             </div>
 
@@ -288,7 +304,6 @@
               <div class="price-unit">per person</div>
             </div>
           </div>
-
           <!-- Card Footer -->
           <div class="ride-card-footer">
             <a th:href="@{/web/bookings/new/{id}(id=${ride.id})}"

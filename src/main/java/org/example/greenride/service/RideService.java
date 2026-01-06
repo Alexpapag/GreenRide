@@ -273,6 +273,18 @@ public class RideService {
     }
 
     // =========================
+    // COMPLETE
+    // =========================
+    public void completeRide(Long id) {
+        Ride ride = getRideById(id);
+        if ("CANCELLED".equalsIgnoreCase(ride.getStatus())) {
+            throw new IllegalStateException("Cannot complete a cancelled ride");
+        }
+        ride.setStatus("COMPLETED");
+        rideRepository.save(ride);
+    }
+
+    // =========================
     // CANCEL
     // =========================
     public void cancelRide(Long id) {
