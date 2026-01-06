@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports - GreenRide Admin</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-container { padding: 2rem; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .data-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-open { background: #fee2e2; color: #991b1b; }
+        .status-closed { background: #d1fae5; color: #065f46; }
+        .btn-small { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; background: white; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header" style="padding: 2rem 1.5rem; color: white;">
+            <h2>GreenRide Admin</h2>
+        </div>
+        <nav class="sidebar-nav" style="padding: 0 1rem;">
+            <a th:href="@{/admin/dashboard}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Dashboard</a>
+            <a th:href="@{/admin/users}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Users</a>
+            <a th:href="@{/admin/rides}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Rides</a>
+            <a th:href="@{/admin/reports}" class="nav-item" style="color: white; display: block; padding: 0.75rem; background: rgba(255,255,255,0.1); border-radius: 8px;">Reports</a>
+            <a th:href="@{/admin/reviews}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Reviews</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main" style="margin-left: 250px; flex: 1;">
+        <div class="admin-container">
+            <header style="margin-bottom: 2rem;">
+                <h1>Reports Management</h1>
+                <div style="margin-top: 1rem;">
+                    <a th:href="@{/admin/reports}" class="btn-small">All</a>
+                    <a th:href="@{/admin/reports(status='OPEN')}" class="btn-small">Open</a>
+                    <a th:href="@{/admin/reports(status='RESOLVED')}" class="btn-small">Resolved</a>
+                </div>
+            </header>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Reporter</th>
+                        <th>Reported User</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="report : ${reports}">
+                        <td th:text="${report.id}">1</td>
+                        <td th:text="${report.reporterUser.username}">user1</td>
+                        <td th:text="${report.reportedUser.username}">user2</td>
+                        <td th:text="${report.reason}">Reason</td>
+                        <td>
+                            <span th:class="'status-badge ' + (${report.status == 'OPEN' ? 'status-open' : 'status-closed'})" th:text="${report.status}">OPEN</span>
+                        </td>
+                        <td th:text="${#temporals.format(report.createdAt, 'dd/MM/yyyy')}">Date</td>
+                        <td>
+                            <form th:action="@{/admin/reports/{id}/status(id=${report.id})}" method="post" style="display: inline;">
+                                <input type="hidden" name="status" th:value="${report.status == 'OPEN' ? 'RESOLVED' : 'OPEN'}">
+                                <button type="submit" class="btn-small" th:text="${report.status == 'OPEN' ? 'Resolve' : 'Reopen'}">Action</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

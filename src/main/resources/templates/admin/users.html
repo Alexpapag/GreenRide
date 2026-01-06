@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management - GreenRide Admin</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-container { padding: 2rem; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .data-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-banned { background: #fee2e2; color: #991b1b; }
+        .btn-small { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; background: white; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="logo-text">GreenRide</div>
+            </div>
+        </div>
+
+        <div class="user-profile">
+            <div class="user-greeting">Admin Panel</div>
+            <div class="user-name" th:text="${session.username}">Admin</div>
+            <div class="user-role">
+                <span class="role-badge driver">ADMIN</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a th:href="@{/web/dashboard}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>User Dashboard</span>
+            </a>
+            <a th:href="@{/admin/dashboard}" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Admin Dashboard</span>
+            </a>
+            <a th:href="@{/admin/users}" class="nav-item active">
+                <i class="fas fa-users"></i>
+                <span>User Management</span>
+            </a>
+            <a th:href="@{/admin/rides}" class="nav-item">
+                <i class="fas fa-car"></i>
+                <span>Ride Management</span>
+            </a>
+            <a th:href="@{/admin/reviews}" class="nav-item">
+                <i class="fas fa-star"></i>
+                <span>Review Management</span>
+            </a>
+            <a th:href="@{/admin/reports}" class="nav-item">
+                <i class="fas fa-flag"></i>
+                <span>Reports</span>
+            </a>
+            <div class="logout-btn">
+                <form th:action="@{/web/logout}" method="post" class="logout-form">
+                    <button type="submit">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main" style="margin-left: 250px; flex: 1;">
+        <div class="admin-container">
+            <header style="margin-bottom: 2rem;">
+                <h1>User Management</h1>
+                <form th:action="@{/admin/users}" method="get" style="margin-top: 1rem; display: flex; gap: 10px;">
+                    <input type="text" name="search" th:value="${searchQuery}" placeholder="Search by username or email..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #e2e8f0; flex: 1;">
+                    <button type="submit" class="btn-small" style="background: #3b82f6; color: white; border: none;">Search</button>
+                </form>
+            </header>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Rating (D/P)</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.id}">1</td>
+                        <td th:text="${user.username}">user</td>
+                        <td th:text="${user.fullName}">Name</td>
+                        <td>
+                            <span th:text="${user.ratingAvgDriver ?: '0.0'}"></span> / 
+                            <span th:text="${user.ratingAvgPassenger ?: '0.0'}"></span>
+                        </td>
+                        <td th:text="${user.role}">USER</td>
+                        <td>
+                            <span th:class="'status-badge ' + (${user.status == 'ACTIVE' ? 'status-active' : 'status-banned'})" th:text="${user.status}">ACTIVE</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline;">
+                                <input type="hidden" name="status" th:value="${user.status == 'ACTIVE' ? 'BANNED' : 'ACTIVE'}">
+                                <button type="submit" class="btn-small" th:text="${user.status == 'ACTIVE' ? 'Ban' : 'Unban'}">Action</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

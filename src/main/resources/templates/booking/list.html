@@ -196,6 +196,16 @@
       </div>
     </div>
 
+    <!-- User Profile -->
+    <div class="user-profile">
+      <div class="user-greeting">Welcome back,</div>
+      <div class="user-name" th:text="${session.username}">John Doe</div>
+      <div class="user-role">
+        <span class="role-badge driver">Driver</span>
+        <span class="role-badge passenger">Passenger</span>
+      </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="sidebar-nav">
       <a th:href="@{/web/dashboard}" class="nav-item">
@@ -214,17 +224,27 @@
         <i class="fas fa-ticket-alt"></i>
         <span>My Bookings</span>
       </a>
+      <a th:href="@{/web/reviews}" class="nav-item">
+        <i class="fas fa-star"></i>
+        <span>My Reviews</span>
+      </a>
       <a th:href="@{/web/my-rides}"
          class="nav-item"
          th:if="${session.userId != null}">
         <i class="fas fa-car-side"></i>
         <span>My Rides</span>
         <!-- Show pending badge if there are pending bookings -->
-        <span th:if="${pendingBookingsCount != null and pendingBookingsCount > 0}"
+        <span th:if="${session.pendingBookingsCount != null and session.pendingBookingsCount > 0}"
               class="pending-badge" style="margin-left: auto;">
-        <span th:text="${pendingBookingsCount}"></span>
+        <span th:text="${session.pendingBookingsCount}"></span>
     </span>
       </a>
+      <div th:if="${session.role == 'ADMIN'}">
+        <a th:href="@{/admin/dashboard}" class="nav-item" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Admin Panel</span>
+        </a>
+      </div>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
           <button type="submit">

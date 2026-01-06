@@ -361,16 +361,14 @@
         <i class="fas fa-car"></i>
         <span>Ride Management</span>
       </a>
+      <a th:href="@{/admin/reviews}" class="nav-item">
+        <i class="fas fa-star"></i>
+        <span>Review Management</span>
+      </a>
       <a th:href="@{/admin/reports}" class="nav-item">
         <i class="fas fa-flag"></i>
         <span>Reports</span>
       </a>
-      <div th:if="${session.role == 'ADMIN'}">
-        <a th:href="@{/admin/dashboard}" class="nav-item" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-          <i class="fas fa-shield-alt"></i>
-          <span>Admin Panel</span>
-        </a>
-      </div>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
           <button type="submit">
@@ -443,13 +441,6 @@
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon revenue">
-            <i class="fas fa-euro-sign"></i>
-          </div>
-          <div class="stat-value">€<span th:text="${totalRevenue}">0</span></div>
-          <p class="stat-label">Total Revenue</p>
-        </div>
 
         <div class="stat-card">
           <div class="stat-icon reports">
@@ -482,10 +473,6 @@
             <div class="quick-stat-value" th:text="${todayBookings}">0</div>
             <div class="quick-stat-label">New Bookings</div>
           </div>
-          <div class="quick-stat-item">
-            <div class="quick-stat-value" th:text="${todayBookings * 15}">0</div>
-            <div class="quick-stat-label">€ Revenue</div>
-          </div>
         </div>
       </div>
 
@@ -501,6 +488,7 @@
             <tr>
               <th>Username</th>
               <th>Full Name</th>
+              <th>Rating (D/P)</th>
               <th>Email</th>
               <th>Role</th>
               <th>Status</th>
@@ -511,6 +499,10 @@
             <tr th:each="user : ${recentUsers}">
               <td th:text="${user.username}">johndoe</td>
               <td th:text="${user.fullName}">John Doe</td>
+              <td>
+                <span th:text="${user.ratingAvgDriver != null ? user.ratingAvgDriver : '0.0'}"></span> /
+                <span th:text="${user.ratingAvgPassenger != null ? user.ratingAvgPassenger : '0.0'}"></span>
+              </td>
               <td th:text="${user.email}">john@example.com</td>
               <td>
                                         <span class="status-badge" th:classappend="${user.role == 'ADMIN'} ? 'status-active' : 'status-suspended'">
@@ -605,6 +597,10 @@
           <a th:href="@{/admin/reports}" class="nav-btn">
             <i class="fas fa-flag"></i>
             View Reports
+          </a>
+          <a th:href="@{/admin/reviews}" class="nav-btn">
+            <i class="fas fa-star"></i>
+            Manage Reviews
           </a>
           <a th:href="@{/web/rides/new}" class="nav-btn">
             <i class="fas fa-plus-circle"></i>

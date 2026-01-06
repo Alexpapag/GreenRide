@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviews - GreenRide</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .dashboard-sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        padding: 2rem 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-main {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem;
+    }
+
+    .reviews-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .review-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+    }
+
+    .reviewer-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .review-date {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .stars {
+        color: #f59e0b;
+        margin-bottom: 0.75rem;
+    }
+
+    .review-content {
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    .ride-info {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        color: #64748b;
+        display: flex;
+        gap: 15px;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-role {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header" style="padding: 0 1.5rem 2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 2rem;">
+      <div class="sidebar-logo" style="display: flex; align-items: center; gap: 12px;">
+        <div class="logo-icon" style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #3b82f6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+          <i class="fas fa-car"></i>
+        </div>
+        <div class="logo-text" style="font-size: 1.5rem; font-weight: 700; color: white;">GreenRide</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" style="padding: 0 1rem;">
+      <a th:href="@{${session.role == 'ADMIN' ? '/admin/dashboard' : '/web/dashboard'}}" class="nav-item" style="display: flex; align-items: center; gap: 12px; padding: 0.875rem 1rem; color: #cbd5e1; text-decoration: none; border-radius: 8px;">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="dashboard-main">
+    <div class="reviews-container">
+      <div class="page-header">
+        <h1 th:text="${isAdminView ? 'All Platform Reviews' : 'My Reviews'}">Reviews</h1>
+        <p th:text="${isAdminView ? 'Monitoring feedback across the platform' : 'See what others say about you and your feedback to them'}"></p>
+      </div>
+
+      <div th:if="${reviews != null and !reviews.isEmpty()}">
+        <div th:each="review : ${reviews}" class="review-card">
+          <div class="review-header">
+            <div class="reviewer-info">
+              <div class="reviewer-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div>
+                <div class="reviewer-name">
+                  <span th:text="${review.reviewer.id == userId ? 'You' : review.reviewer.fullName}">Reviewer Name</span>
+                  <i class="fas fa-arrow-right" style="margin: 0 5px; font-size: 0.8rem; color: #cbd5e1;"></i>
+                  <span th:text="${review.reviewee.id == userId ? 'You' : review.reviewee.fullName}">Reviewee Name</span>
+                </div>
+                <div class="review-date" th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</div>
+              </div>
+            </div>
+            <div class="badge badge-role" th:text="${review.roleOfReviewee}">DRIVER</div>
+          </div>
+
+          <div class="stars">
+            <i th:each="i : ${#numbers.sequence(1, 5)}" 
+               th:class="${i <= review.rating ? 'fas fa-star' : 'far fa-star'}"></i>
+          </div>
+
+          <div class="review-content" th:text="${review.comment ?: 'No comment provided.'}">
+            Review text goes here...
+          </div>
+
+          <div class="ride-info">
+            <span><i class="fas fa-map-marker-alt"></i> <span th:text="${review.ride.fromCity} + ' → ' + ${review.ride.toCity}">Berlin → Munich</span></span>
+            <span><i class="fas fa-calendar-alt"></i> <span th:text="${#temporals.format(review.ride.startDatetime, 'dd/MM/yyyy')}">Date</span></span>
+          </div>
+          
+          <div th:if="${isAdminView}" style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+             <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" onsubmit="return confirm('Are you sure you want to delete this review?')">
+                <button type="submit" class="badge" style="background: #fee2e2; color: #991b1b; border: none; cursor: pointer;">
+                  <i class="fas fa-trash"></i> Delete Review
+                </button>
+             </form>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${reviews == null or reviews.isEmpty()}" class="empty-state">
+        <div class="empty-icon"><i class="fas fa-star"></i></div>
+        <h3>No reviews yet</h3>
+        <p>Reviews will appear here once rides are completed and rated.</p>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

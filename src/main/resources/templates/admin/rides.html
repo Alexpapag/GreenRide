@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ride Management - GreenRide Admin</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-container { padding: 2rem; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .data-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .btn-small { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: 1px solid #e2e8f0; background: white; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header" style="padding: 2rem 1.5rem; color: white;">
+            <h2>GreenRide Admin</h2>
+        </div>
+        <nav class="sidebar-nav" style="padding: 0 1rem;">
+            <a th:href="@{/admin/dashboard}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Dashboard</a>
+            <a th:href="@{/admin/users}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Users</a>
+            <a th:href="@{/admin/rides}" class="nav-item" style="color: white; display: block; padding: 0.75rem; background: rgba(255,255,255,0.1); border-radius: 8px;">Rides</a>
+            <a th:href="@{/admin/reviews}" class="nav-item" style="color: #cbd5e1; display: block; padding: 0.75rem;">Reviews</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main" style="margin-left: 250px; flex: 1;">
+        <div class="admin-container">
+            <header style="margin-bottom: 2rem;">
+                <h1>Ride Management</h1>
+                <div style="margin-top: 1rem;">
+                    <a th:href="@{/admin/rides}" class="btn-small">All</a>
+                    <a th:href="@{/admin/rides(status='PLANNED')}" class="btn-small">Planned</a>
+                    <a th:href="@{/admin/rides(status='COMPLETED')}" class="btn-small">Completed</a>
+                    <a th:href="@{/admin/rides(status='CANCELLED')}" class="btn-small">Cancelled</a>
+                </div>
+            </header>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Route</th>
+                        <th>Driver</th>
+                        <th>Date</th>
+                        <th>Seats</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ride : ${rides}">
+                        <td th:text="${ride.id}">1</td>
+                        <td th:text="${ride.fromCity} + ' → ' + ${ride.toCity}">Berlin → Munich</td>
+                        <td th:text="${ride.driver.fullName}">Driver</td>
+                        <td th:text="${#temporals.format(ride.startDatetime, 'dd/MM/yyyy HH:mm')}">Date</td>
+                        <td th:text="${ride.availableSeatsRemain} + '/' + ${ride.availableSeatsTotal}">3/4</td>
+                        <td>
+                            <span class="status-badge" th:text="${ride.status}">PLANNED</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/rides/{id}/status(id=${ride.id})}" method="post" style="display: inline;">
+                                <select name="status" onchange="this.form.submit()" class="btn-small">
+                                    <option value="">Change Status</option>
+                                    <option value="PLANNED">PLANNED</option>
+                                    <option value="COMPLETED">COMPLETED</option>
+                                    <option value="CANCELLED">CANCELLED</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

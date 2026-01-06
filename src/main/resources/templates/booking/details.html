@@ -258,6 +258,17 @@
         <div class="logo-text">GreenRide</div>
       </div>
     </div>
+    <!-- User Profile -->
+    <div class="user-profile">
+      <div class="user-greeting">Welcome back,</div>
+      <div class="user-name" th:text="${session.username}">John Doe</div>
+      <div class="user-role">
+        <span class="role-badge driver">Driver</span>
+        <span class="role-badge passenger">Passenger</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
     <nav class="sidebar-nav">
       <a th:href="@{/web/dashboard}" class="nav-item">
         <i class="fas fa-home"></i><span>Dashboard</span>
@@ -271,9 +282,23 @@
       <a th:href="@{/web/bookings/list}" class="nav-item active">
         <i class="fas fa-ticket-alt"></i><span>My Bookings</span>
       </a>
+      <a th:href="@{/web/reviews}" class="nav-item">
+        <i class="fas fa-star"></i><span>My Reviews</span>
+      </a>
       <a th:href="@{/web/my-rides}" class="nav-item" th:if="${session.userId != null}">
         <i class="fas fa-car-side"></i><span>My Rides</span>
+        <!-- Show pending badge if there are pending bookings -->
+        <span th:if="${session.pendingBookingsCount != null and session.pendingBookingsCount > 0}"
+              class="pending-badge" style="margin-left: auto;">
+            <span th:text="${session.pendingBookingsCount}"></span>
+        </span>
       </a>
+      <div th:if="${session.role == 'ADMIN'}">
+        <a th:href="@{/admin/dashboard}" class="nav-item" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Admin Panel</span>
+        </a>
+      </div>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
           <button type="submit"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
@@ -371,6 +396,27 @@
         <a th:href="@{/web/rides/{id}(id=${ride.id})}" class="btn btn-primary">
           <i class="fas fa-info-circle"></i> View Ride Details
         </a>
+      </div>
+
+      <!-- Reviews Section -->
+      <div th:if="${booking.status == 'COMPLETED'}" style="margin-top: 3rem;">
+        <h3 style="color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;">
+          <i class="fas fa-star"></i> Rate Experience
+        </h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+          <!-- Passenger can rate driver -->
+          <div class="info-card" style="flex: 1; min-width: 250px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.85rem; color: #64748b;">Rate Driver</div>
+                <div style="font-weight: 600;" th:text="${ride.driver.fullName}">Driver Name</div>
+              </div>
+              <a th:href="@{/web/reviews/new(rideId=${ride.id}, revieweeId=${ride.driver.id}, role='DRIVER')}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                Rate Driver
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>

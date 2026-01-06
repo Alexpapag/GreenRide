@@ -49,6 +49,10 @@
         <i class="fas fa-ticket-alt"></i>
         <span>My Bookings</span>
       </a>
+      <a th:href="@{/web/reviews}" class="nav-item">
+        <i class="fas fa-star"></i>
+        <span>My Reviews</span>
+      </a>
       <a th:href="@{/web/my-rides}"
          class="nav-item"
          th:if="${session.userId != null}">
@@ -60,6 +64,12 @@
         <span th:text="${pendingBookingsCount}"></span>
     </span>
       </a>
+      <div th:if="${session.role == 'ADMIN'}">
+        <a th:href="@{/admin/dashboard}" class="nav-item" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Admin Panel</span>
+        </a>
+      </div>
       <div class="logout-btn">
         <form th:action="@{/web/logout}" method="post" class="logout-form">
             <button type="submit">
@@ -122,7 +132,7 @@
         <div class="stat-icon rating">
           <i class="fas fa-star"></i>
         </div>
-        <div class="stat-value">0.0</div>
+        <div class="stat-value" th:text="${(userRatingAvg != null ? userRatingAvg : '0.0')}">0.0</div>
         <p class="stat-label">Rating</p>
       </div>
 

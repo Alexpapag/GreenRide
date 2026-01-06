@@ -14,9 +14,11 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+    private final org.example.greenride.service.ReviewService reviewService;
 
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService, org.example.greenride.service.ReviewService reviewService) {
         this.adminService = adminService;
+        this.reviewService = reviewService;
     }
 
     // Simple admin check - checks if role is ADMIN
@@ -158,5 +160,32 @@ public class AdminController {
 
         adminService.updateReportStatus(id, status);
         return "redirect:/admin/reports";
+    }
+
+    // =========================
+    // REVIEW MANAGEMENT
+    // =========================
+
+    @GetMapping("/reviews")
+    public String reviews(HttpSession session, Model model) {
+        if (!isAdmin(session)) {
+            return "redirect:/web/auth/login";
+        }
+
+        model.addAttribute("reviews", reviewService.getAllReviews());
+        model.addAttribute("userId", session.getAttribute("userId"));
+        model.addAttribute("isAdminView", true);
+        model.addAttribute("username", session.getAttribute("username"));
+        return "review/list";
+    }
+
+    @PostMapping("/reviews/{id}/delete")
+    public String deleteReview(@PathVariable Long id, HttpSession session) {
+        if (!isAdmin(session)) {
+            return "redirect:/web/auth/login";
+        }
+
+        reviewService.deleteReview(id);
+        return "redirect:/admin/reviews";
     }
 }

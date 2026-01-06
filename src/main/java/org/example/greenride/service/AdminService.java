@@ -55,7 +55,6 @@ public class AdminService {
         // Booking statistics
         long totalBookings = bookingRepository.count();
         long confirmedBookings = bookingRepository.countByStatus("CONFIRMED");
-        BigDecimal totalRevenue = bookingRepository.sumTotalPrice();
 
         // Report statistics
         long openReports = userReportRepository.countByStatus("OPEN");
@@ -80,7 +79,6 @@ public class AdminService {
         stats.put("completedRides", completedRides);
         stats.put("totalBookings", totalBookings);
         stats.put("confirmedBookings", confirmedBookings);
-        stats.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
         stats.put("openReports", openReports);
         stats.put("totalReports", totalReports);
         stats.put("todayRides", todayRides);

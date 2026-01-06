@@ -14,6 +14,7 @@ import org.example.greenride.dto.user.UserLoginDTO;
 import org.example.greenride.dto.user.UserRegistrationDTO;
 import org.example.greenride.entity.Booking;
 import org.example.greenride.entity.Ride;
+import org.example.greenride.entity.User;
 import org.example.greenride.mapper.RideMapper;
 import org.example.greenride.service.AuthService;
 import org.example.greenride.service.BookingService;
@@ -36,11 +37,15 @@ public class WebController {
     private final AuthService authService;
     private final RideService rideService;
     private final BookingService bookingService;
+    private final org.example.greenride.service.ReviewService reviewService;
+    private final org.example.greenride.repository.UserRepository userRepository;
 
-    public WebController(AuthService authService, RideService rideService, BookingService bookingService) {
+    public WebController(AuthService authService, RideService rideService, BookingService bookingService, org.example.greenride.service.ReviewService reviewService, org.example.greenride.repository.UserRepository userRepository) {
         this.authService = authService;
         this.rideService = rideService;
         this.bookingService = bookingService;
+        this.reviewService = reviewService;
+        this.userRepository = userRepository;
     }
 
     // =========================
@@ -158,6 +163,23 @@ public class WebController {
         model.addAttribute("role", role);
 
         try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                java.math.BigDecimal driverAvg = user.getRatingAvgDriver() != null ? user.getRatingAvgDriver() : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal passengerAvg = user.getRatingAvgPassenger() != null ? user.getRatingAvgPassenger() : java.math.BigDecimal.ZERO;
+                
+                // Show average of both if they have both, or just the one that is not zero
+                java.math.BigDecimal totalAvg;
+                if (driverAvg.compareTo(java.math.BigDecimal.ZERO) > 0 && passengerAvg.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    totalAvg = driverAvg.add(passengerAvg).divide(new java.math.BigDecimal("2"), 2, java.math.RoundingMode.HALF_UP);
+                } else if (driverAvg.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    totalAvg = driverAvg;
+                } else {
+                    totalAvg = passengerAvg;
+                }
+                model.addAttribute("userRatingAvg", totalAvg);
+            }
+
             List<Ride> myRides = new ArrayList<>();
             long totalPending = 0;
 
@@ -787,6 +809,88 @@ public class WebController {
         } catch (Exception e) {
             return "redirect:/web/bookings/list?error=not-found";
         }
+    }
+
+    // =========================
+    // REVIEWS
+    // =========================
+    @GetMapping("/web/reviews/new")
+    public String newReviewForm(@RequestParam Long rideId,
+                                @RequestParam Long revieweeId,
+                                @RequestParam String role,
+                                HttpSession session,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        Long reviewerId = (Long) session.getAttribute("userId");
+        if (reviewerId == null) return "redirect:/web/auth/login";
+
+        try {
+            Ride ride = rideService.getRideById(rideId);
+            if (!"COMPLETED".equals(ride.getStatus()) && !"CANCELLED".equals(ride.getStatus())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Reviews can only be made after a ride is completed or cancelled.");
+                return "redirect:/web/dashboard";
+            }
+
+            // Check if reviewer is part of the ride
+            boolean isDriver = ride.getDriver().getId().equals(reviewerId);
+            boolean isPassenger = bookingService.getBookingsByRideId(rideId).stream()
+                    .anyMatch(b -> b.getPassenger().getId().equals(reviewerId) && "COMPLETED".equals(b.getStatus()));
+
+            if (!isDriver && !isPassenger) {
+                redirectAttributes.addFlashAttribute("errorMessage", "You were not part of this ride.");
+                return "redirect:/web/dashboard";
+            }
+
+            org.example.greenride.dto.review.ReviewRequestDTO reviewRequest = new org.example.greenride.dto.review.ReviewRequestDTO();
+            reviewRequest.setRideId(rideId);
+            reviewRequest.setReviewerId(reviewerId);
+            reviewRequest.setRevieweeId(revieweeId);
+            reviewRequest.setRoleOfReviewee(role);
+
+            model.addAttribute("reviewRequest", reviewRequest);
+            model.addAttribute("ride", ride);
+            model.addAttribute("reviewee", userRepository.findById(revieweeId).orElse(null));
+
+            return "review/new";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error loading review form: " + e.getMessage());
+            return "redirect:/web/dashboard";
+        }
+    }
+
+    @PostMapping("/web/reviews")
+    public String createReview(@Valid @ModelAttribute("reviewRequest") org.example.greenride.dto.review.ReviewRequestDTO request,
+                               BindingResult result,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "review/new";
+        }
+
+        try {
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId == null) return "redirect:/web/auth/login";
+            request.setReviewerId(userId);
+
+            reviewService.createReview(request);
+            redirectAttributes.addFlashAttribute("successMessage", "Review submitted successfully!");
+            return "redirect:/web/dashboard";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to submit review: " + e.getMessage());
+            return "review/new";
+        }
+    }
+
+    @GetMapping("/web/reviews")
+    public String showMyReviews(HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return "redirect:/web/auth/login";
+
+        List<org.example.greenride.entity.Review> reviews = reviewService.getReviewsByUserId(userId);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("userId", userId);
+        model.addAttribute("isAdminView", false);
+        return "review/list";
     }
 
     // =========================

@@ -60,6 +60,10 @@ public class ReviewService {
         return reviewRepository.findByRideId(rideId);
     }
 
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAll();
+    }
+
     /**
      * Reviews όπου ο χρήστης είναι reviewer ή reviewee.
      * Αν θες μόνο received reviews: use findByRevieweeId.
