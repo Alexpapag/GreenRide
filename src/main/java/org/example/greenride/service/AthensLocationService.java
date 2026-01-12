@@ -38,6 +38,17 @@ public class AthensLocationService {
         addLocation("Patisia", "Patisia, Athens", 38.0083, 23.7333);
         addLocation("Zografou", "Zografou, Athens", 37.9833, 23.7667);
         addLocation("Ilisia", "Ilisia, Athens", 37.9833, 23.7500);
+
+        // Greek Universities - Athens
+        addLocation("ΕΚΠΑ Ιλίσια", "Πανεπιστημιούπολη Ιλισίων, Αθήνα", 37.9833, 23.7500);
+        addLocation("ΕΜΠ Ζωγράφου", "Πολυτεχνειούπολη Ζωγράφου, Αθήνα", 37.9785, 23.7825);
+        addLocation("Οικονομικό Πανεπιστήμιο Αθηνών", "Πατησίων 76, Αθήνα", 38.0031, 23.7319);
+        addLocation("ΑΣΟΕΕ", "Πατησίων 76, Αθήνα", 38.0031, 23.7319);
+        addLocation("Πάντειο Πανεπιστήμιο", "Λεωφ. Συγγρού 136, Καλλιθέα", 37.9519, 23.7295);
+        addLocation("Πανεπιστήμιο Πειραιώς", "Καραολή και Δημητρίου 80, Πειραιάς", 37.9451, 23.6569);
+        addLocation("Χαροκόπειο Πανεπιστήμιο", "Ελ. Βενιζέλου 70, Καλλιθέα", 37.9492, 23.7024);
+        addLocation("Γεωπονικό Πανεπιστήμιο", "Ιερά Οδός 75, Βοτανικός", 37.9878, 23.7056);
+        addLocation("Παν. Δυτικής Αττικής", "Αγίου Σπυρίδωνα, Αιγάλεω", 38.0667, 23.6833);
     }
 
     private void addLocation(String name, String displayName, double lat, double lon) {

@@ -110,6 +110,12 @@ body {
     opacity: 1 !important;
 }
 
+.input-wrapper {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
 .form-input, .search-input, .form-group input,
 .form-group select, .form-group textarea {
     width: 100% !important;
@@ -139,8 +145,12 @@ body {
     transform: translateY(-50%) !important;
     color: var(--gray) !important;
     transition: var(--transition) !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
 }
 
+.input-wrapper input:focus ~ .input-icon,
+.input-wrapper input:focus + .input-icon,
 .form-input:focus + .input-icon,
 .search-input:focus + .input-icon {
     color: var(--primary) !important;

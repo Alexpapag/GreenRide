@@ -5,264 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${ride.fromCity} + ' → ' + ${ride.toCity} + ' - GreenRide'">Ride Details</title>
   <link th:href="@{/css/app.css}" rel="stylesheet"/>
+  <link th:href="@{/css/pages.css}" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #f8fafc;
-        min-height: 100vh;
-    }
-
-    .dashboard-container {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    .dashboard-sidebar {
-        width: 250px;
-        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-        color: white;
-        padding: 2rem 0;
-        position: fixed;
-        height: 100vh;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .sidebar-header {
-        padding: 0 1.5rem 2rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 2rem;
-    }
-
-    .sidebar-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .logo-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #10b981, #3b82f6);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-    }
-
-    .logo-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #fff, #a5b4fc);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .sidebar-nav {
-        padding: 0 1rem;
-    }
-
-    .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 0.875rem 1rem;
-        margin: 4px 0;
-        color: #cbd5e1;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .nav-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-    }
-
-    .nav-item.active {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border-left: 4px solid #10b981;
-    }
-
-    .nav-item i {
-        width: 20px;
-        text-align: center;
-        font-size: 1.1rem;
-    }
-
-    .logout-btn {
-        margin-top: 2rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .logout-form button {
-        background: none;
-        border: none;
-        color: #cbd5e1;
-        padding: 0.875rem 1rem;
-        cursor: pointer;
-        text-align: left;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .logout-form button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-    }
-
-    .dashboard-main {
-        flex: 1;
-        margin-left: 250px;
-        min-height: 100vh;
-        padding: 2rem;
-    }
-
-    .details-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        max-width: 900px;
-        margin: 0 auto;
-    }
-
-    .ride-header {
-        border-bottom: 2px solid #f1f5f9;
-        padding-bottom: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .route-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0 0 0.5rem 0;
-    }
-
-    .ride-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        color: #64748b;
-        font-size: 0.95rem;
-    }
-
-    .ride-meta span {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .info-card {
-        background: #f8fafc;
-        border-radius: 10px;
-        padding: 1.5rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    .info-card h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.1rem;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .info-item {
-        margin-bottom: 0.75rem;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .info-label {
-        color: #64748b;
-        font-weight: 500;
-    }
-
-    .info-value {
-        color: #0f172a;
-        font-weight: 600;
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
-    
-    .btn-secondary { background: white; color: #475569; border: 1px solid #e2e8f0; }
-    .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
-    
-    .btn-success { background: #10b981; color: white; }
-    .btn-success:hover { background: #059669; transform: translateY(-1px); }
-
-    .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-    .bg-warning { background: #fef3c7; color: #92400e; }
-    .bg-success { background: #d1fae5; color: #065f46; }
-    .bg-danger { background: #fee2e2; color: #991b1b; }
-    .bg-secondary { background: #f1f5f9; color: #475569; }
-
-    .passenger-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-
-    .passenger-table th {
-        text-align: left;
-        padding: 1rem;
-        background: #f1f5f9;
-        color: #475569;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .passenger-table td {
-        padding: 1rem;
-        border-bottom: 1px solid #e2e8f0;
-        color: #0f172a;
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-sidebar { width: 100%; height: auto; position: relative; }
-        .dashboard-main { margin-left: 0; padding: 1rem; }
-        .dashboard-container { flex-direction: column; }
-    }
-  </style>
 </head>
 <body>
 <div class="dashboard-container">
@@ -359,7 +103,14 @@
           <h3><i class="fas fa-info-circle"></i> Ride Details</h3>
           <div class="info-item">
             <span class="info-label">Driver</span>
-            <span class="info-value" th:text="${ride.driver?.fullName ?: ride.driver?.username}"></span>
+            <span style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="info-value" th:text="${ride.driver?.fullName ?: ride.driver?.username}"></span>
+              <button th:if="${!isDriver}" class="btn-report"
+                      th:attr="data-user-id=${ride.driver.id},data-username=${ride.driver.username}"
+                      onclick="openReportModalFromButton(this)" type="button">
+                <i class="fas fa-flag"></i> Report
+              </button>
+            </span>
           </div>
           <div class="info-item">
             <span class="info-label">Status</span>
@@ -426,6 +177,7 @@
               <th>Seats</th>
               <th>Status</th>
               <th>Booked At</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -437,6 +189,13 @@
                       th:text="${booking.status}"></span>
               </td>
               <td th:text="${#temporals.format(booking.bookedAt, 'dd MMM HH:mm')}"></td>
+              <td>
+                <button class="btn-report"
+                        th:attr="data-user-id=${booking.passenger.id},data-username=${booking.passenger.username}"
+                        onclick="openReportModalFromButton(this)" type="button">
+                  <i class="fas fa-flag"></i> Report
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -475,6 +234,33 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- Report User Modal -->
+<div id="reportModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Report User</h3>
+      <button class="close-btn" onclick="closeReportModal()" type="button">&times;</button>
+    </div>
+    <form id="reportForm" onsubmit="submitReport(event)">
+      <div class="form-group">
+        <label class="form-label">Reporting User</label>
+        <input type="text" id="reportedUsername" class="form-control" readonly style="background: #f8fafc;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason <span style="color: #ef4444;">*</span></label>
+        <textarea id="reportReason" class="form-control" placeholder="Please describe the reason for reporting this user..." required></textarea>
+      </div>
+      <input type="hidden" id="reportedUserId">
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cancel</button>
+        <button type="submit" class="btn btn-danger">
+          <i class="fas fa-flag"></i> Submit Report
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Leaflet CSS -->
@@ -614,6 +400,67 @@
       }
 
       return coordinates;
+  }
+
+  // Report Modal Functions
+  function openReportModalFromButton(button) {
+      const userId = button.getAttribute('data-user-id');
+      const username = button.getAttribute('data-username');
+      openReportModal(userId, username);
+  }
+
+  function openReportModal(userId, username) {
+      document.getElementById('reportedUserId').value = userId;
+      document.getElementById('reportedUsername').value = username;
+      document.getElementById('reportReason').value = '';
+      document.getElementById('reportModal').classList.add('active');
+  }
+
+  function closeReportModal() {
+      document.getElementById('reportModal').classList.remove('active');
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+      const modal = document.getElementById('reportModal');
+      if (event.target === modal) {
+          closeReportModal();
+      }
+  }
+
+  async function submitReport(event) {
+      event.preventDefault();
+
+      const reportedUserId = document.getElementById('reportedUserId').value;
+      const reason = document.getElementById('reportReason').value;
+
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+      try {
+          const response = await fetch('/web/reports/submit', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: `reportedUserId=${reportedUserId}&reason=${encodeURIComponent(reason)}`
+          });
+
+          if (response.ok) {
+              alert('Report submitted successfully. Our team will review it.');
+              closeReportModal();
+          } else {
+              const errorText = await response.text();
+              alert('Failed to submit report: ' + errorText);
+          }
+      } catch (error) {
+          console.error('Error submitting report:', error);
+          alert('An error occurred while submitting the report. Please try again.');
+      } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-flag"></i> Submit Report';
+      }
   }
   /*]]>*/
 </script>

@@ -39,13 +39,15 @@ public class WebController {
     private final BookingService bookingService;
     private final org.example.greenride.service.ReviewService reviewService;
     private final org.example.greenride.repository.UserRepository userRepository;
+    private final org.example.greenride.service.UserReportService userReportService;
 
-    public WebController(AuthService authService, RideService rideService, BookingService bookingService, org.example.greenride.service.ReviewService reviewService, org.example.greenride.repository.UserRepository userRepository) {
+    public WebController(AuthService authService, RideService rideService, BookingService bookingService, org.example.greenride.service.ReviewService reviewService, org.example.greenride.repository.UserRepository userRepository, org.example.greenride.service.UserReportService userReportService) {
         this.authService = authService;
         this.rideService = rideService;
         this.bookingService = bookingService;
         this.reviewService = reviewService;
         this.userRepository = userRepository;
+        this.userReportService = userReportService;
     }
 
     // =========================
@@ -891,6 +893,61 @@ public class WebController {
         model.addAttribute("userId", userId);
         model.addAttribute("isAdminView", false);
         return "review/list";
+    }
+
+    // =========================
+    // REPORTS - Submit User Report
+    // =========================
+    @PostMapping("/web/reports/submit")
+    @ResponseBody
+    public String submitUserReport(@RequestParam Long reportedUserId,
+                                   @RequestParam String reason,
+                                   HttpSession session) {
+        try {
+            Long reporterId = (Long) session.getAttribute("userId");
+            if (reporterId == null) {
+                return "Unauthorized";
+            }
+
+            // Cannot report yourself
+            if (reporterId.equals(reportedUserId)) {
+                return "You cannot report yourself";
+            }
+
+            org.example.greenride.dto.userreport.UserReportRequestDTO reportDTO =
+                new org.example.greenride.dto.userreport.UserReportRequestDTO();
+            reportDTO.setReportedUserId(reportedUserId);
+            reportDTO.setReporterUserId(reporterId);
+            reportDTO.setReason(reason);
+
+            userReportService.createReport(reportDTO);
+            return "OK";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    // =========================
+    // REPORTS - My Reports (GET: Show user's submitted reports)
+    // =========================
+    @GetMapping("/web/reports/my-reports")
+    public String showMyReports(HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return "redirect:/web/auth/login";
+
+        try {
+            List<org.example.greenride.entity.UserReport> reports =
+                userReportService.getAll().stream()
+                    .filter(report -> report.getReporterUser() != null &&
+                                    report.getReporterUser().getId().equals(userId))
+                    .collect(Collectors.toList());
+
+            model.addAttribute("reports", reports);
+            return "report/my-reports";
+        } catch (Exception e) {
+            model.addAttribute("reports", new ArrayList<>());
+            return "report/my-reports";
+        }
     }
 
     // =========================
