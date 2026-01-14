@@ -143,17 +143,6 @@
                         <div class="price-unit" id="pricePerSeatUnit" th:text="'€' + ${ride.pricePerSeat} + ' per seat'"></div>
                     </div>
 
-                    <!-- Terms and Conditions -->
-                    <div class="terms-container">
-                        <div class="terms-checkbox">
-                            <input type="checkbox" id="terms" name="terms" required>
-                            <label for="terms" class="terms-text">
-                                I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms & Conditions</a>
-                                and understand that cancellation may be subject to fees if done within 2 hours of departure time.
-                            </label>
-                        </div>
-                    </div>
-
                     <!-- Form Actions -->
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">
@@ -169,30 +158,6 @@
             </div>
         </div>
     </main>
-</div>
-
-<!-- Terms Modal (Simplified) -->
-<div class="modal fade" id="termsModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Terms & Conditions</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <h6>GreenRide Carpooling Agreement</h6>
-                <p>By booking this ride, you agree to:</p>
-                <ul>
-                    <li>Arrive on time at the designated meeting point</li>
-                    <li>Respect the driver's vehicle and rules</li>
-                    <li>Pay the agreed price promptly</li>
-                    <li>Cancel at least 2 hours before departure to avoid fees</li>
-                    <li>Follow all traffic and safety regulations</li>
-                </ul>
-                <p>The driver reserves the right to refuse passengers who violate these terms.</p>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>
@@ -236,14 +201,6 @@
         bookingForm.addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
-
-            // Validate terms checkbox
-            const termsCheckbox = document.getElementById('terms');
-            if (!termsCheckbox.checked) {
-                e.preventDefault();
-                alert('Please agree to the Terms & Conditions');
-                return;
-            }
 
             // Show loading state
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';

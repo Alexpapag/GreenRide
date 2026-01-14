@@ -284,19 +284,80 @@
 
   async function initializeMap(fromCity, toCity) {
       try {
-          // Geocode both cities
-          const fromResponse = await fetch(`/geo/forward?q=${encodeURIComponent(fromCity)}`);
-          const fromData = await fromResponse.json();
+          console.log('Initializing map for route:', fromCity, '->', toCity);
 
-          const toResponse = await fetch(`/geo/forward?q=${encodeURIComponent(toCity)}`);
-          const toData = await toResponse.json();
+          // First, try to check if these are Athens locations
+          let fromData = null;
+          let toData = null;
 
-          // Get route details
-          const routeResponse = await fetch(`/geo/route?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`);
-          if (!routeResponse.ok) {
-              throw new Error('Failed to fetch route details');
+          // Try Athens locations first (faster and more reliable for Greek names)
+          try {
+              const athensLocResponse = await fetch(`/geo/athens/locations?q=${encodeURIComponent(fromCity)}`);
+              if (athensLocResponse.ok) {
+                  const athensLocs = await athensLocResponse.json();
+                  if (athensLocs && athensLocs.length > 0) {
+                      const loc = athensLocs[0];
+                      fromData = { lat: loc.lat, lon: loc.lon, display_name: loc.displayName };
+                      console.log('From location (Athens):', fromData);
+                  }
+              }
+          } catch (e) {
+              console.warn('Athens location lookup failed for from city:', e);
           }
-          const routeData = await routeResponse.json();
+
+          // Fallback to regular geocoding if not found in Athens locations
+          if (!fromData) {
+              const fromResponse = await fetch(`/geo/forward?q=${encodeURIComponent(fromCity)}`);
+              if (!fromResponse.ok) {
+                  throw new Error(`Failed to geocode ${fromCity}: ${fromResponse.status}`);
+              }
+              fromData = await fromResponse.json();
+              console.log('From location (Nominatim):', fromData);
+          }
+
+          // Try Athens locations for destination
+          try {
+              const athensLocResponse = await fetch(`/geo/athens/locations?q=${encodeURIComponent(toCity)}`);
+              if (athensLocResponse.ok) {
+                  const athensLocs = await athensLocResponse.json();
+                  if (athensLocs && athensLocs.length > 0) {
+                      const loc = athensLocs[0];
+                      toData = { lat: loc.lat, lon: loc.lon, display_name: loc.displayName };
+                      console.log('To location (Athens):', toData);
+                  }
+              }
+          } catch (e) {
+              console.warn('Athens location lookup failed for to city:', e);
+          }
+
+          // Fallback to regular geocoding
+          if (!toData) {
+              const toResponse = await fetch(`/geo/forward?q=${encodeURIComponent(toCity)}`);
+              if (!toResponse.ok) {
+                  throw new Error(`Failed to geocode ${toCity}: ${toResponse.status}`);
+              }
+              toData = await toResponse.json();
+              console.log('To location (Nominatim):', toData);
+          }
+
+          // Get route details - try Athens route first if both are Athens locations
+          let routeData = null;
+          try {
+              const routeResponse = await fetch(`/geo/athens/route?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`);
+              if (routeResponse.ok) {
+                  routeData = await routeResponse.json();
+                  console.log('Route data (Athens):', routeData);
+              } else {
+                  console.warn('Athens route API failed, trying regular route');
+                  const fallbackResponse = await fetch(`/geo/route?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`);
+                  if (fallbackResponse.ok) {
+                      routeData = await fallbackResponse.json();
+                      console.log('Route data (regular):', routeData);
+                  }
+              }
+          } catch (e) {
+              console.warn('Route lookup failed, will draw straight line:', e);
+          }
 
           // Initialize map
           const map = L.map('map').setView([fromData.lat, fromData.lon], 7);
@@ -331,7 +392,8 @@
               .bindPopup(`<b>Destination:</b> ${toCity}`);
 
           // Decode and draw polyline if available
-          if (routeData.polyline) {
+          if (routeData && routeData.polyline) {
+              console.log('Drawing route polyline');
               const coordinates = decodePolyline(routeData.polyline);
               const polyline = L.polyline(coordinates, {
                   color: '#3b82f6',
@@ -343,6 +405,7 @@
               map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
           } else {
               // Fallback: draw straight line
+              console.log('Drawing straight line (no polyline available)');
               const latlngs = [
                   [fromData.lat, fromData.lon],
                   [toData.lat, toData.lon]
@@ -357,9 +420,18 @@
               map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
           }
 
+          console.log('Map initialized successfully');
+
       } catch (error) {
           console.error('Error initializing map:', error);
-          document.getElementById('map').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64748b;"><i class="fas fa-exclamation-triangle"></i> Unable to load map</div>';
+          const mapEl = document.getElementById('map');
+          if (mapEl) {
+              mapEl.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #64748b; background: #f8fafc;">
+                  <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; color: #f59e0b;"></i>
+                  <p style="font-size: 1rem; margin: 0;">Unable to load map</p>
+                  <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0; color: #94a3b8;">${error.message || 'Unknown error'}</p>
+              </div>`;
+          }
       }
   }
 
