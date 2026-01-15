@@ -9,6 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+// Service για επικύρωση τηλεφώνων μέσω Routee Phone Validation API
 @Service
 public class RouteePhoneValidationServiceImpl implements RouteePhoneValidationService {
 
@@ -26,6 +27,7 @@ public class RouteePhoneValidationServiceImpl implements RouteePhoneValidationSe
         this.baseUrl = baseUrl;
     }
 
+    // Επικύρωση τηλεφώνου σε E.164 format μέσω Routee lookup API
     @Override
     public RouteePhoneValidationResponseDTO validate(String phoneE164) {
         // Το endpoint είναι αυτό που περιγράφει το Routee docs για phone validation :contentReference[oaicite:2]{index=2}

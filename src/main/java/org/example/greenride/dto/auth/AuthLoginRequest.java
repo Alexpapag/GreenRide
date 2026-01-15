@@ -1,6 +1,7 @@
 package org.example.greenride.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
+// DTO για αίτημα σύνδεσης (Web form)
 
 public class AuthLoginRequest {
 

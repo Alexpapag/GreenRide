@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// REST API Controller για διαχείριση διαδρομών (rides)
 @RestController
 @RequestMapping("/rides")
 public class RideController {
@@ -21,7 +22,7 @@ public class RideController {
         this.rideService = rideService;
     }
 
-    // CREATE
+    // Δημιουργία νέας διαδρομής
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RideResponseDTO createRide(@Valid @RequestBody RideRequestDTO dto) {
@@ -29,14 +30,14 @@ public class RideController {
         return RideMapper.toResponseDTO(created);
     }
 
-    // READ one
+    // Ανάκτηση μιας διαδρομής
     @GetMapping("/{id}")
     public RideResponseDTO getRide(@PathVariable Long id) {
         Ride ride = rideService.getRideById(id);
         return RideMapper.toResponseDTO(ride);
     }
 
-    // READ all
+    // Ανάκτηση όλων των διαδρομών
     @GetMapping
     public List<RideResponseDTO> getAllRides() {
         return rideService.getAllRides()
@@ -45,7 +46,7 @@ public class RideController {
                 .toList();
     }
 
-    // UPDATE
+    // Ενημέρωση διαδρομής
     @PutMapping("/{id}")
     public RideResponseDTO updateRide(@PathVariable Long id,
                                       @RequestBody RideRequestDTO dto) {
@@ -53,7 +54,7 @@ public class RideController {
         return RideMapper.toResponseDTO(updated);
     }
 
-    // DELETE
+    // Διαγραφή διαδρομής
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRide(@PathVariable Long id) {

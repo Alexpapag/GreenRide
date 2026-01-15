@@ -14,7 +14,7 @@ public class Ride {
     @Column(name = "ride_id")
     private Long id;
 
-    // ---------- Relationships ----------
+    // Relationships 
 
     // driver_id -> User.user_id (Many rides per one driver)
     @ManyToOne(optional = false)
@@ -29,7 +29,7 @@ public class Ride {
     @OneToMany(mappedBy = "ride")
     private List<Review> reviews;
 
-    // ---------- Fields ----------
+    //  Fields 
 
     @Column(name = "start_datetime", nullable = false)
     private LocalDateTime startDatetime;
@@ -74,7 +74,7 @@ public class Ride {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // ---------- Constructors ----------
+    //  Constructors 
 
     public Ride() {
     }
@@ -111,7 +111,7 @@ public class Ride {
         this.createdAt = createdAt;
     }
 
-    // ---------- Getters & Setters ----------
+    // Getters & Setters 
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

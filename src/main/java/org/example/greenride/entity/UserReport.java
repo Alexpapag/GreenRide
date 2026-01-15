@@ -35,7 +35,7 @@ public class UserReport {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-    // ---------- Constructors ----------
+    // Constructors 
 
     public UserReport() {
     }
@@ -54,7 +54,7 @@ public class UserReport {
         this.resolvedAt = resolvedAt;
     }
 
-    // ---------- Getters & Setters ----------
+    // Getters & Setters 
 
     public Long getId() {
         return id;

@@ -1,6 +1,7 @@
 package org.example.greenride.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
+// DTO για αίτημα σύνδεσης χρήστη
 
 public class UserLoginDTO {
     @NotBlank

@@ -8,6 +8,7 @@ import org.example.greenride.dto.external.JsonPlaceholderPostResponseDTO;
 import org.example.greenride.service.external.ExternalPostService;
 import org.springframework.web.bind.annotation.*;
 
+// REST API Controller για demo κλήση εξωτερικού API (JSONPlaceholder)
 @RestController
 @RequestMapping("/external")
 @Tag(name = "External APIs", description = "Endpoints που καλούν εξωτερικές υπηρεσίες")
@@ -19,6 +20,7 @@ public class ExternalPostController {
         this.externalPostService = externalPostService;
     }
 
+    // Demo POST σε εξωτερικό API
     @PostMapping("/jsonplaceholder/posts")
     @Operation(summary = "POST to external API (JSONPlaceholder)", description = "Κάνει POST σε εξωτερική υπηρεσία και επιστρέφει την απάντηση.")
     public JsonPlaceholderPostResponseDTO createExternalPost(@Valid @RequestBody JsonPlaceholderPostRequestDTO request) {

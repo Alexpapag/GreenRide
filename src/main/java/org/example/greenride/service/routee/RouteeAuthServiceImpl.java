@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 
+// Service για Routee API authentication με OAuth2 και token caching
 @Service
 public class RouteeAuthServiceImpl implements RouteeAuthService {
 
@@ -36,6 +37,7 @@ public class RouteeAuthServiceImpl implements RouteeAuthService {
         this.appSecret = appSecret;
     }
 
+    // Ανάκτηση access token με caching (synchronized για thread safety)
     @Override
     public synchronized String getAccessToken() {
         if (cachedToken != null && cachedExpiresAt != null && Instant.now().isBefore(cachedExpiresAt)) {

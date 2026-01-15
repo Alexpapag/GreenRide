@@ -1,4 +1,5 @@
 package org.example.greenride.dto.geo;
+// DTO για προκαθορισμένες τοποθεσίες Αθήνας
 
 public class AthensLocation {
     private String name;

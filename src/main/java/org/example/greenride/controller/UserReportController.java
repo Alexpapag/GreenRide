@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// REST API Controller για διαχείριση αναφορών χρηστών (user reports)
 @RestController
 @RequestMapping("/user-reports")
 public class UserReportController {
@@ -21,6 +22,7 @@ public class UserReportController {
         this.userReportService = userReportService;
     }
 
+    // Δημιουργία νέας αναφοράς
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserReportResponseDTO create(@Valid @RequestBody UserReportRequestDTO dto) {
@@ -28,11 +30,13 @@ public class UserReportController {
         return UserReportMapper.toResponseDTO(created);
     }
 
+    // Ανάκτηση μιας αναφοράς
     @GetMapping("/{id}")
     public UserReportResponseDTO getById(@PathVariable Long id) {
         return UserReportMapper.toResponseDTO(userReportService.getById(id));
     }
 
+    // Ανάκτηση όλων των αναφορών
     @GetMapping
     public List<UserReportResponseDTO> getAll() {
         return userReportService.getAll()

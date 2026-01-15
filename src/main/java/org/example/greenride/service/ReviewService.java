@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Service για διαχείριση αξιολογήσεων (CRUD, rating averages calculation)
 @Service
 public class ReviewService {
 
@@ -30,6 +31,7 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
+    // Δημιουργία νέας αξιολόγησης (με ανανέωση user averages)
     public Review createReview(ReviewRequestDTO dto) {
         Ride ride = rideRepository.findById(dto.getRideId())
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
@@ -51,27 +53,28 @@ public class ReviewService {
         return saved;
     }
 
+    // Ανάκτηση αξιολόγησης με βάση ID
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found"));
     }
 
+    // Ανάκτηση αξιολογήσεων για συγκεκριμένη διαδρομή
     public List<Review> getReviewsByRideId(Long rideId) {
         return reviewRepository.findByRideId(rideId);
     }
 
+    // Ανάκτηση όλων των αξιολογήσεων
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
     }
 
-    /**
-     * Reviews όπου ο χρήστης είναι reviewer ή reviewee.
-     * Αν θες μόνο received reviews: use findByRevieweeId.
-     */
+    // Ανάκτηση αξιολογήσεων όπου ο χρήστης είναι reviewer ή reviewee
     public List<Review> getReviewsByUserId(Long userId) {
         return reviewRepository.findByReviewerIdOrRevieweeId(userId, userId);
     }
 
+    // Ενημέρωση αξιολόγησης (μόνο rating/comment, με ανανέωση averages)
     public Review updateReview(Long id, ReviewRequestDTO dto) {
         Review existing = getReviewById(id);
 
@@ -89,6 +92,7 @@ public class ReviewService {
         return saved;
     }
 
+    // Διαγραφή αξιολόγησης (με ανανέωση user averages)
     public void deleteReview(Long id) {
         Review existing = getReviewById(id);
         Long revieweeId = existing.getReviewee() != null ? existing.getReviewee().getId() : null;
@@ -100,6 +104,7 @@ public class ReviewService {
         }
     }
 
+    // Ανανέωση μέσων όρων rating για χρήστη (driver και passenger)
     private void recalcUserAverages(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));

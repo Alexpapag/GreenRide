@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+// Web Controller για διαχειριστικές λειτουργίες (admin panel)
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -21,21 +22,20 @@ public class AdminController {
         this.reviewService = reviewService;
     }
 
-    // Simple admin check - checks if role is ADMIN
+    // Έλεγχος αν ο χρήστης είναι admin
     private boolean isAdmin(HttpSession session) {
         String role = (String) session.getAttribute("role");
         return role != null && role.equalsIgnoreCase("ADMIN");
     }
 
+    // Admin Dashboard - στατιστικά συστήματος
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-        // Check if user is logged in
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/web/auth/login";
         }
 
-        // Check if user is admin
         if (!isAdmin(session)) {
             return "redirect:/web/dashboard";
         }
@@ -48,10 +48,7 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    // =========================
-    // USER MANAGEMENT
-    // =========================
-
+    // Διαχείριση χρηστών - προβολή όλων
     @GetMapping("/users")
     public String users(HttpSession session, Model model,
                         @RequestParam(required = false) String search) {
@@ -70,6 +67,7 @@ public class AdminController {
         return "admin/users";
     }
 
+    // Ενημέρωση κατάστασης χρήστη (ACTIVE/BANNED/SUSPENDED)
     @PostMapping("/users/{id}/status")
     public String updateUserStatus(@PathVariable Long id,
                                    @RequestParam String status,
@@ -82,6 +80,7 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
+    // Ενημέρωση ρόλου χρήστη
     @PostMapping("/users/{id}/role")
     public String updateUserRole(@PathVariable Long id,
                                  @RequestParam String role,
@@ -94,10 +93,7 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-    // =========================
-    // RIDE MANAGEMENT
-    // =========================
-
+    // Διαχείριση διαδρομών - προβολή όλων
     @GetMapping("/rides")
     public String rides(HttpSession session, Model model,
                         @RequestParam(required = false) String status) {
@@ -116,6 +112,7 @@ public class AdminController {
         return "admin/rides";
     }
 
+    // Ενημέρωση κατάστασης διαδρομής
     @PostMapping("/rides/{id}/status")
     public String updateRideStatus(@PathVariable Long id,
                                    @RequestParam String status,
@@ -128,10 +125,7 @@ public class AdminController {
         return "redirect:/admin/rides";
     }
 
-    // =========================
-    // REPORT MANAGEMENT
-    // =========================
-
+    // Διαχείριση αναφορών - προβολή όλων
     @GetMapping("/reports")
     public String reports(HttpSession session, Model model,
                           @RequestParam(required = false) String status) {
@@ -150,6 +144,7 @@ public class AdminController {
         return "admin/reports";
     }
 
+    // Ενημέρωση κατάστασης αναφοράς
     @PostMapping("/reports/{id}/status")
     public String updateReportStatus(@PathVariable Long id,
                                      @RequestParam String status,
@@ -162,10 +157,7 @@ public class AdminController {
         return "redirect:/admin/reports";
     }
 
-    // =========================
-    // REVIEW MANAGEMENT
-    // =========================
-
+    // Διαχείριση αξιολογήσεων - προβολή όλων
     @GetMapping("/reviews")
     public String reviews(HttpSession session, Model model) {
         if (!isAdmin(session)) {
@@ -179,6 +171,7 @@ public class AdminController {
         return "review/list";
     }
 
+    // Διαγραφή προβληματικής αξιολόγησης
     @PostMapping("/reviews/{id}/delete")
     public String deleteReview(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) {

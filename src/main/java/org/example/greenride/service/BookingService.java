@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Service για διαχείριση κρατήσεων (CRUD, status updates, seats management)
 @Service
 public class BookingService {
 
@@ -31,7 +32,7 @@ public class BookingService {
         this.rideService = rideService;
     }
 
-    // CREATE (DTO)
+    // Δημιουργία νέας κράτησης (με validation και seats update)
     public Booking createBooking(BookingRequestDTO dto) {
         if (dto == null) throw new IllegalArgumentException("Booking data is required");
 
@@ -72,24 +73,28 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    // Ανάκτηση κράτησης με βάση ID
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
     }
 
+    // Ανάκτηση όλων των κρατήσεων
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
+    // Ανάκτηση κρατήσεων για συγκεκριμένη διαδρομή
     public List<Booking> getBookingsByRideId(Long rideId) {
-        // Αν δεν έχεις αυτό το method στο repository, δες σημείωση πιο κάτω
         return bookingRepository.findByRideId(rideId);
     }
 
+    // Ανάκτηση κρατήσεων συγκεκριμένου επιβάτη
     public List<Booking> getBookingsByPassengerId(Long passengerId) {
         return bookingRepository.findByPassengerId(passengerId);
     }
 
+    // Ακύρωση κράτησης (με επιστροφή θέσεων)
     public Booking cancelBooking(Long id) {
         Booking booking = getBookingById(id);
 
@@ -110,6 +115,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    // Διαγραφή κράτησης
     public void deleteBooking(Long id) {
         if (!bookingRepository.existsById(id)) {
             throw new IllegalArgumentException("Booking not found");
@@ -117,7 +123,7 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    // Get all bookings for a driver's rides
+    // Ανάκτηση όλων των κρατήσεων για τις διαδρομές ενός οδηγού
     public List<Booking> getBookingsForDriverRides(Long driverId) {
         // Get all rides by this driver
         List<Ride> driverRides = rideService.getRidesByDriver(driverId);
@@ -129,7 +135,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    // Update booking status (for driver to confirm/reject)
+    // Ενημέρωση status κράτησης (confirm/reject από οδηγό)
     public Booking updateBookingStatus(Long bookingId, String newStatus, Long driverId) {
         Booking booking = getBookingById(bookingId);
 
@@ -176,7 +182,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    // Get pending bookings count for driver
+    // Μέτρηση pending κρατήσεων για οδηγό
     public long getPendingBookingsCountForDriver(Long driverId) {
         return getBookingsForDriverRides(driverId).stream()
                 .filter(b -> "PENDING".equals(b.getStatus()))

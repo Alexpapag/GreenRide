@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+// DTO για αίτημα δημιουργίας αξιολόγησης
 public class ReviewRequestDTO {
 
     @NotNull
@@ -19,7 +20,7 @@ public class ReviewRequestDTO {
 
     @NotBlank
     @Size(max = 20)
-    private String roleOfReviewee; // "DRIVER" or "PASSENGER" (όπως το έχεις)
+    private String roleOfReviewee; // "DRIVER" or "PASSENGER" 
 
     @NotNull
     @Min(1)

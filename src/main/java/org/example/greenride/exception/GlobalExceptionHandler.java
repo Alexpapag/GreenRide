@@ -20,10 +20,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+// Global Exception Handler - κεντρικός χειρισμός εξαιρέσεων για όλο το API
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // Validation errors από @Valid στα DTOs
+    // Χειρισμός validation errors από @Valid στα DTOs
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -51,6 +52,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
+    // Χειρισμός IllegalArgumentException (λανθασμένα ορίσματα)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(
             IllegalArgumentException ex,
@@ -67,6 +69,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
+    // Χειρισμός BadCredentialsException (λάθος username/password)
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(
             BadCredentialsException ex,
@@ -83,6 +86,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 
+    // Χειρισμός γενικών exceptions (fallback για όλα τα άλλα σφάλματα)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAllExceptions(
             Exception ex,
@@ -99,6 +103,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // Χειρισμός σφαλμάτων από εξωτερικά APIs (external API errors)
     @ExceptionHandler(HttpStatusCodeException.class)
     public ResponseEntity<ApiError> handleHttpStatusCodeException(
             HttpStatusCodeException ex,

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+// Service για authentication (εγγραφή και σύνδεση χρηστών)
 @Service
 public class AuthService {
 
@@ -33,6 +34,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
+    // Εγγραφή νέου χρήστη (με validation και JWT token generation)
     public AuthResponseDTO register(UserRegistrationDTO dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
@@ -64,6 +66,7 @@ public class AuthService {
         return new AuthResponseDTO(token, saved.getId(), saved.getUsername(), saved.getRole());
     }
 
+    // Σύνδεση χρήστη (authentication και JWT token generation)
     public AuthResponseDTO login(UserLoginDTO dto) {
         System.out.println("Login attempt for user: " + dto.getUsername());
         authenticationManager.authenticate(
@@ -79,7 +82,7 @@ public class AuthService {
         return new AuthResponseDTO(token, u.getId(), u.getUsername(), highestRole);
     }
 
-    // Helper method to determine the highest role
+    // Προσδιορισμός ανώτερου ρόλου (ADMIN > USER)
     private String getHighestRole(User user) {
         // First check if user has ADMIN in their roles collection
         boolean isAdminInRoles = user.getRoles().stream()
@@ -93,7 +96,7 @@ public class AuthService {
         return user.getRole() != null ? user.getRole() : "USER";
     }
 
-    // Helper method to get authorities
+    // Μετατροπή User roles σε authorities
     private Collection<? extends GrantedAuthority> getAuthorities(User user) {
         return user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))

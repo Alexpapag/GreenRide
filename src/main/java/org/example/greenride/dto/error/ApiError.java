@@ -1,4 +1,5 @@
 package org.example.greenride.dto.error;
+// DTO για μηνύματα σφαλμάτων API
 
 import java.time.LocalDateTime;
 import java.util.Map;

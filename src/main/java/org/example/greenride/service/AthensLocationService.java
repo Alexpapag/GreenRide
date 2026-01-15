@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// Service για προκαθορισμένες τοποθεσίες Αθήνας (με συντεταγμένες)
 @Service
 public class AthensLocationService {
 
@@ -51,14 +52,17 @@ public class AthensLocationService {
         addLocation("Παν. Δυτικής Αττικής", "Αγίου Σπυρίδωνα, Αιγάλεω", 38.0667, 23.6833);
     }
 
+    // Προσθήκη τοποθεσίας στο map
     private void addLocation(String name, String displayName, double lat, double lon) {
         locations.put(name.toLowerCase(), new AthensLocation(name, displayName, lat, lon));
     }
 
+    // Ανάκτηση όλων των τοποθεσιών
     public List<AthensLocation> getAllLocations() {
         return new ArrayList<>(locations.values());
     }
 
+    // Αναζήτηση τοποθεσιών με query
     public List<AthensLocation> searchLocations(String query) {
         if (query == null || query.trim().isEmpty()) {
             return getAllLocations();
@@ -71,10 +75,12 @@ public class AthensLocationService {
                 .collect(Collectors.toList());
     }
 
+    // Ανάκτηση τοποθεσίας με βάση όνομα
     public Optional<AthensLocation> getLocation(String name) {
         return Optional.ofNullable(locations.get(name.toLowerCase()));
     }
 
+    // Έλεγχος αν υπάρχει τοποθεσία
     public boolean hasLocation(String name) {
         return locations.containsKey(name.toLowerCase());
     }

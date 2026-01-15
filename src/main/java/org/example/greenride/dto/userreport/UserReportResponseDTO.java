@@ -1,6 +1,7 @@
 package org.example.greenride.dto.userreport;
 
 import java.time.LocalDateTime;
+// DTO για απόκριση αναφοράς χρήστη
 
 public class UserReportResponseDTO {
     private Long id;

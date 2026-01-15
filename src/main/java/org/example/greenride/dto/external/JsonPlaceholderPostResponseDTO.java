@@ -1,4 +1,5 @@
 package org.example.greenride.dto.external;
+// DTO για απόκριση από εξωτερικό API
 
 public class JsonPlaceholderPostResponseDTO {
 

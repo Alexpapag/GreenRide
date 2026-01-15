@@ -3,13 +3,14 @@ package org.example.greenride.dto.userreport;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+// DTO για αίτημα αναφοράς χρήστη
 
 public class UserReportRequestDTO {
 
     @NotNull
     private Long reportedUserId;
 
-    private Long reporterUserId; // nullable (όπως το έχεις)
+    private Long reporterUserId; // nullable 
 
     @NotBlank
     @Size(max = 1000)

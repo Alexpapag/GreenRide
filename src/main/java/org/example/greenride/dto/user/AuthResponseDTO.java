@@ -1,5 +1,6 @@
 package org.example.greenride.dto.user;
 
+// DTO για απόκριση authentication με JWT token
 public class AuthResponseDTO {
     private String token;
     private String tokenType = "Bearer";

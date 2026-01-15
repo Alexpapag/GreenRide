@@ -3,9 +3,11 @@ package org.example.greenride.mapper;
 import org.example.greenride.dto.booking.BookingResponseDTO;
 import org.example.greenride.entity.Booking;
 
+// Mapper για μετατροπή Booking entity σε BookingResponseDTO
 public final class BookingMapper {
     private BookingMapper() {}
 
+    // Μετατροπή από Booking entity σε BookingResponseDTO
     public static BookingResponseDTO toResponseDTO(Booking b) {
         if (b == null) return null;
 

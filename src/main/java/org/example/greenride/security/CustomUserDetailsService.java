@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+// Custom UserDetailsService - φορτώνει user από DB για Spring Security
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -21,6 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    // Φόρτωση user από DB με βάση username
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
@@ -35,8 +37,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    // Μετατροπή User roles σε Spring Security authorities
     private Collection<? extends GrantedAuthority> getAuthorities(User user) {
-        // Convert roles to authorities
         return user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());

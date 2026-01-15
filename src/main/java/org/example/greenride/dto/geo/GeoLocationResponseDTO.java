@@ -1,4 +1,5 @@
 package org.example.greenride.dto.geo;
+// DTO για απόκριση geolocation (coordinates)
 
 public class GeoLocationResponseDTO {
     private Double lat;

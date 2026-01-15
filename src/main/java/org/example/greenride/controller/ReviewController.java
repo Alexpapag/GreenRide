@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// REST API Controller για διαχείριση αξιολογήσεων (reviews)
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
@@ -21,6 +22,7 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
+    // Δημιουργία νέας αξιολόγησης
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ReviewResponseDTO create(@Valid @RequestBody ReviewRequestDTO dto) {
@@ -28,12 +30,14 @@ public class ReviewController {
         return ReviewMapper.toResponseDTO(created);
     }
 
+    // Ανάκτηση μιας αξιολόγησης
     @GetMapping("/{id}")
     public ReviewResponseDTO getById(@PathVariable Long id) {
         Review review = reviewService.getReviewById(id);
         return ReviewMapper.toResponseDTO(review);
     }
 
+    // Ανάκτηση αξιολογήσεων για συγκεκριμένη διαδρομή
     @GetMapping("/ride/{rideId}")
     public List<ReviewResponseDTO> getByRide(@PathVariable Long rideId) {
         return reviewService.getReviewsByRideId(rideId)
@@ -42,6 +46,7 @@ public class ReviewController {
                 .toList();
     }
 
+    // Ανάκτηση αξιολογήσεων για συγκεκριμένο χρήστη
     @GetMapping("/user/{userId}")
     public List<ReviewResponseDTO> getByUser(@PathVariable Long userId) {
         return reviewService.getReviewsByUserId(userId)
@@ -50,6 +55,7 @@ public class ReviewController {
                 .toList();
     }
 
+    // Ενημέρωση αξιολόγησης
     @PutMapping("/{id}")
     public ReviewResponseDTO update(@PathVariable Long id,
                                     @Valid @RequestBody ReviewRequestDTO dto) {
@@ -57,6 +63,7 @@ public class ReviewController {
         return ReviewMapper.toResponseDTO(updated);
     }
 
+    // Διαγραφή αξιολόγησης
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

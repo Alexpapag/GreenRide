@@ -169,7 +169,7 @@ public class DataInitializer {
                 System.out.println("User created: sofia / sofia123");
             }
 
-            // --- ADD DEMO RIDES WITH GREEK UNIVERSITY LOCATIONS ---
+            //  DEMO RIDES WITH GREEK UNIVERSITY LOCATIONS 
             if (rideRepository.count() == 0) {
                 // Ride 1: ΕΚΠΑ Ιλίσια -> ΕΜΠ Ζωγράφου
                 Ride ride1 = new Ride();
@@ -430,9 +430,7 @@ public class DataInitializer {
                     reviewRepository.save(r4);
                 }
 
-                System.out.println("✓ 10 demo rides with Greek university locations created!");
-                System.out.println("✓ 5 bookings created!");
-                System.out.println("✓ 4 reviews created!");
+
             }
         };
     }

@@ -11,6 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+// Service για geocoding και routing μέσω Nominatim OSM και OSRM API
 @Service
 public class GeoLocationServiceImpl implements GeoLocationService {
 
@@ -31,6 +32,7 @@ public class GeoLocationServiceImpl implements GeoLocationService {
         public String display_name;
     }
 
+    // Μετατροπή διεύθυνσης σε συντεταγμένες μέσω Nominatim OSM API
     @Override
     public GeoLocationResponseDTO forwardGeocode(String query) {
         String url = UriComponentsBuilder.fromHttpUrl(NOMINATIM_SEARCH_URL)
@@ -65,6 +67,7 @@ public class GeoLocationServiceImpl implements GeoLocationService {
     }
     private static final String OSRM_ROUTE_URL = "https://router.project-osrm.org/route/v1/driving/";
 
+    // Υπολογισμός διαδρομής από διεύθυνση σε διεύθυνση (με geocoding)
     @Override
     public RouteDetails getRouteDetails(String from, String to) {
         try {
@@ -77,6 +80,7 @@ public class GeoLocationServiceImpl implements GeoLocationService {
         }
     }
 
+    // Υπολογισμός διαδρομής από συντεταγμένες σε συντεταγμένες μέσω OSRM API
     @Override
     public RouteDetails getRouteDetailsByCoordinates(double fromLat, double fromLon, double toLat, double toLon) {
         try {

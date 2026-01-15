@@ -3,6 +3,7 @@ package org.example.greenride.dto.auth;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+// DTO για αίτημα εγγραφής (Web form)
 
 public class AuthRegisterRequest {
 

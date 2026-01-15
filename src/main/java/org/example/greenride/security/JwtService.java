@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
+// Service για διαχείριση JWT tokens (generation, validation, extraction)
 @Service
 public class JwtService {
 
@@ -24,6 +25,7 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
+    // Δημιουργία JWT token με username και role
     public String generateToken(String username, String role) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
@@ -37,14 +39,17 @@ public class JwtService {
                 .compact();
     }
 
+    // Εξαγωγή username από token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    // Εξαγωγή role από token
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
+    // Έλεγχος εγκυρότητας token (expiration check)
     public boolean isTokenValid(String token) {
         try {
             Claims claims = parseAllClaims(token);
@@ -55,6 +60,7 @@ public class JwtService {
         }
     }
 
+    // Εξαγωγή authorities από token (μετατροπή role σε GrantedAuthority)
     public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
         String role = extractRole(token);
         if (role == null || role.isEmpty()) {
@@ -63,6 +69,7 @@ public class JwtService {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
+    // Parsing όλων των claims από token
     private Claims parseAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
@@ -71,6 +78,7 @@ public class JwtService {
                 .getPayload();
     }
 
+    // Εξαγωγή συγκεκριμένου claim από token
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = parseAllClaims(token);
         return claimsResolver.apply(claims);

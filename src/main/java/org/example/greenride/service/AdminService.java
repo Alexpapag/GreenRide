@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Service για διαχειριστικές λειτουργίες (dashboard stats, user/ride/report management)
 @Service
 public class AdminService {
 
@@ -35,10 +36,7 @@ public class AdminService {
         this.userReportRepository = userReportRepository;
     }
 
-    // =========================
-    // DASHBOARD STATISTICS
-    // =========================
-
+    // Ανάκτηση στατιστικών για admin dashboard
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -91,14 +89,12 @@ public class AdminService {
         return stats;
     }
 
-    // =========================
-    // USER MANAGEMENT
-    // =========================
-
+    // Ανάκτηση όλων των χρηστών
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    // Αναζήτηση χρηστών με keyword (username/email/fullName)
     public List<User> searchUsers(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return userRepository.findAll();
@@ -107,6 +103,7 @@ public class AdminService {
                 keyword, keyword, keyword);
     }
 
+    // Ενημέρωση status χρήστη (ACTIVE/BANNED/SUSPENDED)
     public User updateUserStatus(Long userId, String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -119,6 +116,7 @@ public class AdminService {
         return userRepository.save(user);
     }
 
+    // Ενημέρωση role χρήστη (USER/ADMIN/DRIVER)
     public User updateUserRole(Long userId, String role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -131,18 +129,17 @@ public class AdminService {
         return userRepository.save(user);
     }
 
-    // =========================
-    // RIDE MANAGEMENT
-    // =========================
-
+    // Ανάκτηση όλων των διαδρομών
     public List<Ride> getAllRides() {
         return rideRepository.findAll();
     }
 
+    // Ανάκτηση διαδρομών με βάση status
     public List<Ride> getRidesByStatus(String status) {
         return rideRepository.findByStatus(status);
     }
 
+    // Ενημέρωση status διαδρομής
     public Ride updateRideStatus(Long rideId, String status) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
@@ -155,18 +152,17 @@ public class AdminService {
         return rideRepository.save(ride);
     }
 
-    // =========================
-    // REPORT MANAGEMENT
-    // =========================
-
+    // Ανάκτηση όλων των αναφορών χρηστών
     public List<UserReport> getAllReports() {
         return userReportRepository.findAll();
     }
 
+    // Ανάκτηση αναφορών με βάση status
     public List<UserReport> getReportsByStatus(String status) {
         return userReportRepository.findByStatus(status);
     }
 
+    // Ενημέρωση status αναφοράς (OPEN/REVIEWED/CLOSED)
     public UserReport updateReportStatus(Long reportId, String status) {
         UserReport report = userReportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));

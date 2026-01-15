@@ -1,6 +1,7 @@
 package org.example.greenride.dto.review;
 
 import java.time.LocalDateTime;
+// DTO για απόκριση αξιολόγησης
 
 public class ReviewResponseDTO {
     private Long id;

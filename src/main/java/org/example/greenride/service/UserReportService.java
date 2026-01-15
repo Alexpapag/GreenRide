@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Service για διαχείριση αναφορών χρηστών (user reports)
 @Service
 public class UserReportService {
 
@@ -23,6 +24,7 @@ public class UserReportService {
         this.userRepository = userRepository;
     }
 
+    // Δημιουργία νέας αναφοράς χρήστη
     public UserReport createReport(UserReportRequestDTO dto) {
         User reported = userRepository.findById(dto.getReportedUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Reported user not found"));
@@ -40,11 +42,13 @@ public class UserReportService {
         return userReportRepository.save(report);
     }
 
+    // Ανάκτηση αναφοράς με βάση ID
     public UserReport getById(Long id) {
         return userReportRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
     }
 
+    // Ανάκτηση όλων των αναφορών
     public List<UserReport> getAll() {
         return userReportRepository.findAll();
     }

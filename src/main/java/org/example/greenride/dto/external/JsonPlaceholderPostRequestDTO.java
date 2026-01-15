@@ -1,4 +1,5 @@
 package org.example.greenride.dto.external;
+// DTO για demo POST σε εξωτερικό API
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

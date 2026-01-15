@@ -6,6 +6,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+// Service για κλήση εξωτερικού API demo (JSONPlaceholder)
 @Service
 public class ExternalPostServiceImpl implements ExternalPostService {
 
@@ -17,6 +18,7 @@ public class ExternalPostServiceImpl implements ExternalPostService {
         this.restTemplate = restTemplate;
     }
 
+    // Δημιουργία post στο JSONPlaceholder external API
     @Override
     public JsonPlaceholderPostResponseDTO createPost(JsonPlaceholderPostRequestDTO request) {
         HttpHeaders headers = new HttpHeaders();

@@ -1,4 +1,5 @@
 package org.example.greenride.dto.routee;
+// DTO για απόκριση επικύρωσης τηλεφώνου από Routee
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

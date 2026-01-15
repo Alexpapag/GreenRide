@@ -1,5 +1,6 @@
 package org.example.greenride.dto.auth;
 
+// DTO για απόκριση authentication (Web)
 public class AuthResponse {
 
     private String token;

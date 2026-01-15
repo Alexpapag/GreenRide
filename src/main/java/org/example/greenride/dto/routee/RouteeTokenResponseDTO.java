@@ -1,4 +1,5 @@
 package org.example.greenride.dto.routee;
+// DTO για OAuth token από Routee
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

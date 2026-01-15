@@ -41,7 +41,7 @@ public class Review {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // ---------- Constructors ----------
+    // Constructors 
 
     public Review() {
     }
@@ -62,7 +62,7 @@ public class Review {
         this.createdAt = createdAt;
     }
 
-    // ---------- Getters & Setters ----------
+    //  Getters & Setters 
 
     public Long getId() {
         return id;

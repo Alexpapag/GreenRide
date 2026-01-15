@@ -50,9 +50,8 @@ public class WebController {
         this.userReportService = userReportService;
     }
 
-    // =========================
+    
     // AUTH - LOGIN (GET: Show form)
-    // =========================
     @GetMapping("/web/auth/login")
     public String loginForm(Model model,
                             @RequestParam(value = "error", required = false) String error,
@@ -69,9 +68,8 @@ public class WebController {
         return "auth/login";
     }
 
-    // =========================
+    
     // AUTH - LOGIN (POST: Process form)
-    // =========================
     @PostMapping("/web/auth/login")
     public String login(@Valid @ModelAttribute("loginRequest") AuthLoginRequest request,
                         BindingResult result, HttpSession session, Model model) {
@@ -105,18 +103,15 @@ public class WebController {
         }
     }
 
-    // =========================
+    
     // AUTH - REGISTER (GET: Show form)
-    // =========================
     @GetMapping("/web/auth/register")
     public String registerForm(Model model) {
         model.addAttribute("registerRequest", new AuthRegisterRequest());
         return "auth/register";
     }
 
-    // =========================
     // AUTH - REGISTER (POST: Process form)
-    // =========================
     @PostMapping("/web/auth/register")
     public String register(@Valid @ModelAttribute("registerRequest") AuthRegisterRequest request,
                            BindingResult result, Model model) {
@@ -141,9 +136,7 @@ public class WebController {
         }
     }
 
-    // =========================
     // LOGOUT
-    // =========================
     @PostMapping("/web/logout")
     public String logout(HttpSession session) {
         session.invalidate();
@@ -151,9 +144,8 @@ public class WebController {
     }
 
 
-    // =========================
+
 // DASHBOARD (requires login)
-// =========================
     @GetMapping("/web/dashboard")
     public String dashboard(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
@@ -185,7 +177,7 @@ public class WebController {
             List<Ride> myRides = new ArrayList<>();
             long totalPending = 0;
 
-            // Fetch rides offered by the user (regardless of role)
+            // Fetch rides offered by the user regardless of role
             myRides = rideService.getRidesByDriver(userId);
             if (myRides != null && !myRides.isEmpty()) {
                 // Calculate pending bookings

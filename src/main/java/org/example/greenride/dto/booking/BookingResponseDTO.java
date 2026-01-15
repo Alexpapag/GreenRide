@@ -3,6 +3,7 @@ package org.example.greenride.dto.booking;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// DTO για απόκριση κράτησης
 public class BookingResponseDTO {
     private Long id;
 

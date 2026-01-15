@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// REST API Controller για διαχείριση κρατήσεων (bookings)
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
@@ -21,6 +22,7 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
+    // Δημιουργία νέας κράτησης
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public BookingResponseDTO createBooking(@Valid @RequestBody BookingRequestDTO dto) {
@@ -28,12 +30,14 @@ public class BookingController {
         return BookingMapper.toResponseDTO(created);
     }
 
+    // Ανάκτηση μιας κράτησης
     @GetMapping("/{id}")
     public BookingResponseDTO getBooking(@PathVariable Long id) {
         Booking booking = bookingService.getBookingById(id);
         return BookingMapper.toResponseDTO(booking);
     }
 
+    // Ανάκτηση όλων των κρατήσεων
     @GetMapping
     public List<BookingResponseDTO> getAllBookings() {
         return bookingService.getAllBookings()
@@ -42,6 +46,7 @@ public class BookingController {
                 .toList();
     }
 
+    // Ανάκτηση κρατήσεων για συγκεκριμένη διαδρομή
     @GetMapping("/ride/{rideId}")
     public List<BookingResponseDTO> getBookingsByRide(@PathVariable Long rideId) {
         return bookingService.getBookingsByRideId(rideId)
@@ -50,6 +55,7 @@ public class BookingController {
                 .toList();
     }
 
+    // Ανάκτηση κρατήσεων για συγκεκριμένο επιβάτη
     @GetMapping("/passenger/{passengerId}")
     public List<BookingResponseDTO> getBookingsByPassenger(@PathVariable Long passengerId) {
         return bookingService.getBookingsByPassengerId(passengerId)
@@ -58,12 +64,14 @@ public class BookingController {
                 .toList();
     }
 
+    // Ακύρωση κράτησης
     @PutMapping("/{id}/cancel")
     public BookingResponseDTO cancelBooking(@PathVariable Long id) {
         Booking cancelled = bookingService.cancelBooking(id);
         return BookingMapper.toResponseDTO(cancelled);
     }
 
+    // Διαγραφή κράτησης
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBooking(@PathVariable Long id) {

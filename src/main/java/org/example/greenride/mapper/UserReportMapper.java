@@ -5,9 +5,11 @@ import org.example.greenride.dto.userreport.UserReportResponseDTO;
 import org.example.greenride.entity.User;
 import org.example.greenride.entity.UserReport;
 
+// Mapper για μετατροπή UserReport entity -> UserReportDTO
 public final class UserReportMapper {
     private UserReportMapper() {}
 
+    // Μετατροπή από UserReport entity σε UserReportResponseDTO
     public static UserReportResponseDTO toResponseDTO(UserReport r) {
         if (r == null) return null;
 
@@ -25,6 +27,7 @@ public final class UserReportMapper {
         return dto;
     }
 
+    // Δημιουργία UserReport entity από UserReportRequestDTO
     public static UserReport fromRequestDTO(UserReportRequestDTO dto, User reported, User reporterOrNull) {
         UserReport r = new UserReport();
         r.setReportedUser(reported);

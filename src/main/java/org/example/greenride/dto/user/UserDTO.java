@@ -2,6 +2,7 @@ package org.example.greenride.dto.user;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+// DTO για πληροφορίες χρήστη
 
 public class UserDTO {
     private Long id;

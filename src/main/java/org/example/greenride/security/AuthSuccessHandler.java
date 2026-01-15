@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Collection;
 
+// Handler για επιτυχημένο authentication - redirect με βάση role
 @Component
 public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
+    // Μετά από επιτυχημένη σύνδεση, redirect ανάλογα με τον ρόλο
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -21,15 +23,15 @@ public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-        // Check if user has ADMIN role
+        // Έλεγχος αν ο χρήστης είναι ADMIN
         boolean isAdmin = authorities.stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
-        // Redirect based on role
+        // Redirect με βάση τον ρόλο
         if (isAdmin) {
-            response.sendRedirect("/admin/dashboard");
+            response.sendRedirect("/admin/dashboard"); // Admin -> admin dashboard
         } else {
-            response.sendRedirect("/web/dashboard");
+            response.sendRedirect("/web/dashboard"); // User -> user dashboard
         }
     }
 }

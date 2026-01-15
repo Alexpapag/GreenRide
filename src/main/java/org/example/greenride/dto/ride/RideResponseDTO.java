@@ -3,26 +3,27 @@ package org.example.greenride.dto.ride;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// DTO για απόκριση διαδρομής (με όλα τα στοιχεία)
 public class RideResponseDTO {
-    private Long id;
-    private Long driverId;
-    private String driverUsername;
-    private String driverFullName; // ΠΡΟΣΘΗΚΗ ΑΥΤΗ
+    private Long id; // ID διαδρομής
+    private Long driverId; // ID οδηγού
+    private String driverUsername; // Username οδηγού
+    private String driverFullName; // Ονοματεπώνυμο οδηγού
 
-    private LocalDateTime startDatetime;
-    private LocalDateTime endDatetime;
-    private String fromCity;
-    private String fromAddress;
-    private String toCity;
-    private String toAddress;
-    private BigDecimal distanceKm;
-    private Integer estimatedDurationMin;
-    private Integer availableSeatsTotal;
-    private Integer availableSeatsRemain;
-    private BigDecimal pricePerSeat;
-    private String status;
-    private String weatherSummary;
-    private LocalDateTime createdAt;
+    private LocalDateTime startDatetime; // Ώρα αναχώρησης
+    private LocalDateTime endDatetime; // Ώρα άφιξης
+    private String fromCity; // Πόλη αναχώρησης
+    private String fromAddress; // Διεύθυνση αναχώρησης
+    private String toCity; // Πόλη προορισμού
+    private String toAddress; // Διεύθυνση προορισμού
+    private BigDecimal distanceKm; // Απόσταση σε km
+    private Integer estimatedDurationMin; // Διάρκεια σε λεπτά
+    private Integer availableSeatsTotal; // Συνολικές θέσεις
+    private Integer availableSeatsRemain; // Διαθέσιμες θέσεις
+    private BigDecimal pricePerSeat; // Τιμή ανά θέση
+    private String status; // Κατάσταση (PLANNED/COMPLETED/etc)
+    private String weatherSummary; // Καιρικές συνθήκες
+    private LocalDateTime createdAt; // Ημερομηνία δημιουργίας
 
     // getters/setters
     public Long getId() { return id; }

@@ -5,9 +5,11 @@ import org.example.greenride.dto.ride.RideResponseDTO;
 import org.example.greenride.entity.Ride;
 import org.example.greenride.entity.User;
 
+// Mapper για μετατροπή Ride entity ↔ RideDTO
 public final class RideMapper {
     private RideMapper() {}
 
+    // Μετατροπή από Ride entity σε RideResponseDTO
     public static RideResponseDTO toResponseDTO(Ride r) {
         if (r == null) return null;
 
@@ -42,14 +44,14 @@ public final class RideMapper {
         return dto;
     }
 
-    /** Για create: περνάς driver entity από service */
+    // Δημιουργία Ride entity από RideRequestDTO (για create)
     public static Ride fromRequestDTO(RideRequestDTO dto, User driver) {
         Ride r = new Ride();
         applyToEntity(dto, driver, r);
         return r;
     }
 
-    /** Για update: ενημερώνει fields στο υπάρχον entity */
+    // Εφαρμογή RideRequestDTO σε υπάρχον Ride entity (για update)
     public static void applyToEntity(RideRequestDTO dto, User driver, Ride r) {
         r.setDriver(driver);
 
@@ -65,7 +67,6 @@ public final class RideMapper {
         r.setEstimatedDurationMin(dto.getEstimatedDurationMin());
 
         r.setAvailableSeatsTotal(dto.getAvailableSeatsTotal());
-        // αν θες στο create: remain = total (service καλύτερα)
         r.setPricePerSeat(dto.getPricePerSeat());
     }
 }

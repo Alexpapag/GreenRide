@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Service για διαχείριση διαδρομών (CRUD, search, status updates)
 @Service
 public class RideService {
 
@@ -24,9 +25,7 @@ public class RideService {
         this.userRepository = userRepository;
     }
 
-    // =========================
-    // CREATE (DTO)
-    // =========================
+    // Δημιουργία νέας διαδρομής από DTO (με validation)
     public Ride createRide(RideRequestDTO dto) {
         System.out.println("=== RIDE SERVICE: createRide ===");
         System.out.println("DTO received: " + dto);
@@ -92,9 +91,7 @@ public class RideService {
         return saved;
     }
 
-    // =========================
-    // CREATE (παλιό, entity) - το κρατάμε για backward compatibility
-    // =========================
+    // Δημιουργία νέας διαδρομής από entity (για backward compatibility)
     public Ride createRide(Long driverId, Ride rideData) {
         // Βρες driver
         User driver = userRepository.findById(driverId)
@@ -145,24 +142,18 @@ public class RideService {
         return rideRepository.save(ride);
     }
 
-    // =========================
-    // READ (ένα)
-    // =========================
+    // Ανάκτηση διαδρομής με βάση ID
     public Ride getRideById(Long id) {
         return rideRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));
     }
 
-    // =========================
-    // READ (όλα)
-    // =========================
+    // Ανάκτηση όλων των διαδρομών
     public List<Ride> getAllRides() {
         return rideRepository.findAll();
     }
 
-    // =========================
-    // UPDATE (DTO) - partial update
-    // =========================
+    // Ενημέρωση διαδρομής από DTO (partial update)
     public Ride updateRide(Long id, RideRequestDTO dto) {
         Ride existing = getRideById(id);
 
@@ -209,9 +200,7 @@ public class RideService {
         return rideRepository.save(existing);
     }
 
-    // =========================
-    // UPDATE (παλιό, entity) - partial update
-    // =========================
+    // Ενημέρωση διαδρομής από entity (για backward compatibility)
     public Ride updateRide(Long id, Ride updated) {
         Ride existing = getRideById(id);
 
@@ -272,9 +261,7 @@ public class RideService {
         return rideRepository.save(existing);
     }
 
-    // =========================
-    // COMPLETE
-    // =========================
+    // Ολοκλήρωση διαδρομής (αλλαγή status σε COMPLETED)
     public void completeRide(Long id) {
         Ride ride = getRideById(id);
         if ("CANCELLED".equalsIgnoreCase(ride.getStatus())) {
@@ -284,18 +271,14 @@ public class RideService {
         rideRepository.save(ride);
     }
 
-    // =========================
-    // CANCEL
-    // =========================
+    // Ακύρωση διαδρομής (αλλαγή status σε CANCELLED)
     public void cancelRide(Long id) {
         Ride ride = getRideById(id);
         ride.setStatus("CANCELLED");
         rideRepository.save(ride);
     }
 
-    // =========================
-    // DELETE
-    // =========================
+    // Διαγραφή διαδρομής
     public void deleteRide(Long id) {
         if (!rideRepository.existsById(id)) {
             throw new IllegalArgumentException("Ride not found");
@@ -303,29 +286,29 @@ public class RideService {
         rideRepository.deleteById(id);
     }
 
-    // =========================
-    // SEARCH
-    // =========================
+    // Αναζήτηση διαδρομών από πόλη σε πόλη
     public List<Ride> searchByCities(String fromCity, String toCity) {
         return rideRepository.findByFromCityAndToCity(fromCity, toCity);
     }
 
+    // Αναζήτηση διαδρομών με πόλεις και status
     public List<Ride> searchByCitiesAndStatus(String fromCity, String toCity, String status) {
         return rideRepository.findByFromCityAndToCityAndStatus(fromCity, toCity, status);
     }
 
+    // Αναζήτηση διαδρομών με χρονικό διάστημα
     public List<Ride> searchByStartDatetimeRange(LocalDateTime startFrom, LocalDateTime startTo) {
         return rideRepository.findByStartDatetimeBetween(startFrom, startTo);
     }
 
-    // Driver's rides (add after getAllRides())
+    // Ανάκτηση διαδρομών συγκεκριμένου οδηγού
     public List<Ride> getRidesByDriver(Long driverId) {
         User driver = userRepository.findById(driverId)
                 .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
         return rideRepository.findByDriver(driver);
     }
 
-    // Available rides (exclude driver's own)
+    // Ανάκτηση διαθέσιμων διαδρομών (εκτός από συγκεκριμένο οδηγό)
     public List<Ride> getAvailableRides(Long excludeDriverId) {
         return rideRepository.findByDriverIdNotAndStatus(excludeDriverId, "PLANNED");
     }

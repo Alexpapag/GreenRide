@@ -39,7 +39,7 @@ public class Booking {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
-    // ---------- Constructors ----------
+    //  Constructors 
 
     public Booking() {
     }
@@ -60,7 +60,7 @@ public class Booking {
         this.cancelledAt = cancelledAt;
     }
 
-    // ---------- Getters & Setters ----------
+    // Getters & Setters 
 
     public Long getId() {
         return id;
